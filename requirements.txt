@@ -1,0 +1,43 @@
+# AI伴侣项目核心依赖 (server后端)
+# 安装命令: pip install -r requirements.txt
+# 生成于 2026-04-27，基于当前venv环境
+
+fastapi==0.136.1
+uvicorn[standard]==0.46.0
+sqlalchemy==2.0.49
+pydantic==2.13.3
+pydantic-settings==2.14.0
+python-dotenv==1.2.2
+python-multipart==0.0.26
+aiofiles==25.1.0
+
+# LLM 与 LangChain
+langchain==1.2.15
+langchain-core==1.3.2
+langchain-anthropic==1.4.1
+langchain-openai==1.2.1
+langgraph==1.1.9
+anthropic==0.97.0
+openai==2.32.0
+tiktoken==0.12.0
+
+# 向量数据库 & Embedding
+chromadb==1.5.8
+
+# 图像与工具
+pillow==12.2.0
+requests==2.33.1
+PyYAML==6.0.3
+
+# 数据库驱动 (如果使用MySQL)
+PyMySQL==1.1.2
+
+# 开发与工具
+rich==15.0.0
+tenacity==9.1.4
+
+# 注意：
+# 1. XAI_API_KEY / ANTHROPIC_API_KEY / DEEPSEEK_API_KEY / OPENAI_API_KEY 请在 .env 中配置
+# 2. ADMIN_PASSWORD 必须设置为强密码
+# 3. 运行前: pip install -r requirements.txt && python -m venv venv && source venv/bin/activate
+# 4. 前端依赖单独在 client/ 和 admin/ 目录使用 npm install
