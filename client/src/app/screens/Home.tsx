@@ -68,27 +68,27 @@ function getDeviceId(): string {
 }
 
 export function Home() {
-  const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  const [companions, setCompanions] = useState<Companion[]>([]);
-  const [moments, setMoments] = useState<MomentItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [pullDistance, setPullDistance] = useState(0);
-  const [previewImage, setPreviewImage] = useState<string | null>(null);
-  const [hasUnread, setHasUnread] = useState(false);
+  const navigate = useNavigate(); // 路由跳转
+  const { t, i18n } = useTranslation(); // t翻译函数、i18n切换语言
+  const [companions, setCompanions] = useState<Companion[]>([]); // 顶部横向智能体头像列表
+  const [moments, setMoments] = useState<MomentItem[]>([]); // 朋友圈动态列表主体
+  const [loading, setLoading] = useState(true); // 页面首次整体加载（全屏 loading）
+  const [refreshing, setRefreshing] = useState(false); //下拉刷新动画状态
+  const [pullDistance, setPullDistance] = useState(0); // 手指下拉距离，控制顶部下拉提示高度
+  const [previewImage, setPreviewImage] = useState<string | null>(null); //大图预览弹窗，存图片 url，null 关闭弹窗
+  const [hasUnread, setHasUnread] = useState(false); // 是否有未读动态（铃铛小红点）
   const [commentInputs, setCommentInputs] = useState<Record<number, string>>({});
   const [commentLoading, setCommentLoading] = useState<Record<number, boolean>>({});
-  const [hasMore, setHasMore] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [showBackToTop, setShowBackToTop] = useState(false);
-  const deviceId = getDeviceId();
-  const containerRef = useRef<HTMLDivElement>(null);
-  const touchStartY = useRef(0);
-  const isPulling = useRef(false);
-  const loadMoreRef = useRef<HTMLDivElement>(null);
-  const offsetRef = useRef(0);
-  const PAGE_SIZE = 20;
+  const [hasMore, setHasMore] = useState(true); //是否还有下一页动态
+  const [loadingMore, setLoadingMore] = useState(false); //滑到底加载更多分页 loading
+  const [showBackToTop, setShowBackToTop] = useState(false); //滚动超过 200px 显示「回到顶部」按钮
+  const deviceId = getDeviceId(); // 当前设备唯一标识
+  const containerRef = useRef<HTMLDivElement>(null); // 页面滚动容器DOM
+  const touchStartY = useRef(0); // 下拉触摸起始Y坐标
+  const isPulling = useRef(false); // 是否正在下拉
+  const loadMoreRef = useRef<HTMLDivElement>(null); // 底部加载更多监听DOM
+  const offsetRef = useRef(0); // 分页偏移量（ref存，不刷新页面）
+  const PAGE_SIZE = 20; // 分页：每次接口拉20条动态
 
   /** Moments 筛选：语种 / 性别 / 性取向（空字符串表示不限） */
   const [momentFilterLang, setMomentFilterLang] = useState("");
@@ -358,7 +358,7 @@ export function Home() {
       setCommentLoading((prev) => ({ ...prev, [momentId]: false }));
     }
   };
-
+  //根据动态 companion_id 匹配顶部智能体列表，获取头像、名字、性别
   const getCompanionById = (id: string): Companion | undefined => {
     return companions.find((c) => c.id === id);
   };
@@ -656,8 +656,9 @@ export function Home() {
           className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center px-0 sm:px-4"
           onClick={() => setShowMomentFilter(false)}
         >
+          {/* pb-24: 移动端底部额外留白，防止筛选弹窗的"重置/应用"按钮被系统导航栏遮挡；PC 端恢复为 sm:pb-6 */}
           <div
-            className="bg-card border border-border rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto"
+            className="bg-card border border-border rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-sm max-h-[90vh] overflow-y-auto pb-24 sm:pb-6"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
@@ -673,10 +674,11 @@ export function Home() {
             <div className="space-y-4">
               <div>
                 <label className="text-muted-foreground text-xs mb-1 block">{t("home.filterLanguage")}</label>
+                {/* min-w-0: 防止 select 内容过长时撑破弹窗宽度 */}
                 <select
                   value={draftFilterLang}
                   onChange={(e) => setDraftFilterLang(e.target.value)}
-                  className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-w-0"
                 >
                   <option value="">{t("home.filterAll")}</option>
                   <option value="zh">中文</option>

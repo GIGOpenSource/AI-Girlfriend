@@ -21,6 +21,8 @@ function figmaAssetResolver() {
 const API_BASE = process.env.API_BASE_URL || 'http://localhost:8000'
 
 export default defineConfig({
+  // base: './' 让 Capacitor 在移动端以相对路径加载资源（文件系统），本地 dev 调试时注释掉
+  base: './',
   plugins: [
     figmaAssetResolver(),
     // The React and Tailwind plugins are both required for Make, even if

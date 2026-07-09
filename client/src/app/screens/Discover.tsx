@@ -444,7 +444,7 @@ export function Discover() {
             </div>
 
             {/* Category Tabs */}
-            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <div className="flex gap-2 overflow-x-auto pb-2 py-2 scrollbar-hide">
               {POST_CATEGORIES.map((cat) => (
                 <button
                   key={cat.key}
