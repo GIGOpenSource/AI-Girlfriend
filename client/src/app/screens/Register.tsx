@@ -8,19 +8,23 @@ export function Register() {
   const { t } = useTranslation();
   const [gender, setGender] = useState<"male" | "female" | "secret">("secret");
   const [sexualOrientation, setSexualOrientation] = useState("heterosexual");
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [nickname, setNickname] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // 邮箱格式校验
+  const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    if (!username.trim() || username.trim().length < 3) {
-      setError(t('register.errorUsername'));
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail || !EMAIL_REGEX.test(trimmedEmail)) {
+      setError(t('register.errorEmail'));
       return;
     }
     if (!password || password.length < 6) {
@@ -38,8 +42,9 @@ export function Register() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: username.trim(),
-          nickname: nickname.trim() || username.trim(),
+          username: trimmedEmail,
+          nickname: nickname.trim() || trimmedEmail,
+          email: trimmedEmail,
           password,
           gender: gender === "male" ? "男" : gender === "female" ? "女" : "保密",
           sexual_orientation: sexualOrientation,
@@ -77,13 +82,13 @@ export function Register() {
           )}
 
           <input
-            id="register-username"
-            name="username"
-            type="text"
-            autoComplete="username"
-            placeholder={t('register.username')}
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            id="register-email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder={t('register.email')}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
           />
 

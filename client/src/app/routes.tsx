@@ -1,10 +1,33 @@
-import { createBrowserRouter, Outlet, useLocation } from "react-router";
+import { createBrowserRouter, Outlet, redirect, useLocation } from "react-router";
 import { lazy, Suspense, useEffect } from "react";
 import {
   getPageName,
   setupGlobalButtonTracking,
   trackPageView,
 } from "./utils/analytics";
+
+// 不需要登录就能访问的路由
+const PUBLIC_PATHS = ["/", "/register"];
+
+// 路由守卫：未登录自动跳转到登录页
+function authGuardLoader({ request }: { request: Request }) {
+  const url = new URL(request.url);
+  const path = url.pathname;
+
+  // 公开路由直接放行
+  if (PUBLIC_PATHS.includes(path)) {
+    return null;
+  }
+
+  // 已登录放行
+  const token = localStorage.getItem("user_token");
+  if (token) {
+    return null;
+  }
+
+  // 未登录 → 重定向到登录页
+  return redirect("/");
+}
 
 const Login = lazy(() =>
   import("./screens/Login").then((m) => ({ default: m.Login }))
@@ -83,6 +106,7 @@ export const router = createBrowserRouter([
   {
     path: "/",
     Component: RootLayout,
+    loader: authGuardLoader,
     children: [
       { index: true, Component: Login },
       { path: "register", Component: Register },

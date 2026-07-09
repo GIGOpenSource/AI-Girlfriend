@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import tailwindcss from '@tailwindcss/vite'
@@ -18,9 +18,13 @@ function figmaAssetResolver() {
   }
 }
 
-const API_BASE = process.env.API_BASE_URL || 'http://localhost:8000'
+export default defineConfig(({ mode }) => {
+  // loadEnv 读取 .env.development / .env.production 中的变量
+  const env = loadEnv(mode, process.cwd(), '')
+  const API_BASE = env.API_BASE_URL || 'http://localhost:8000'
 
-export default defineConfig({
+  return {
+
   // base: './' 让 Capacitor 在移动端以相对路径加载资源（文件系统），本地 dev 调试时注释掉
   base: './',
   plugins: [
@@ -70,4 +74,5 @@ export default defineConfig({
 
   // File types to support raw imports. Never add .css, .tsx, or .ts files to this.
   assetsInclude: ['**/*.svg', '**/*.csv'],
+  }
 })

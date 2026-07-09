@@ -64,28 +64,69 @@ adb --version
 
 ---
 
-## 第二步：确保后端可访问
+## 第二步：配置后端地址
 
 > ⚠️ 重要：App 运行在真机上，无法访问 `http://localhost:8000`！
 
-### 方案 A：部署后端到服务器（推荐）
+项目通过 **`.env` 文件 + Vite 代理** 管理前后端对接，共两层机制：
 
-修改 `vite.config.ts` 第 21 行的 `API_BASE_URL`：
+| 机制 | 文件 | 作用 |
+|---|---|---|
+| **Vite 代理**（开发时） | `vite.config.ts` 第 21 行 | `npm run dev` 时，浏览器请求代理转发到后端 |
+| **VITE_API_BASE_URL**（打包时） | `.env.production` | `npm run build` 时，所有 API 请求加上此后端前缀 |
+
+---
+
+### 场景 1：本地开发 + 本地后端（默认）
+
+**只需启动后端，然后 `npm run dev`，无需任何修改。**
+
+原理：`.env.development` 中 `VITE_API_BASE_URL` 为空，请求走 Vite 代理转发到 `http://localhost:8000`。
+
+```powershell
+cd client
+npm run dev
+```
+
+---
+
+### 场景 2：本地开发 + 连接生产后端
+
+**修改 `client/vite.config.ts` 第 21 行：**
 
 ```ts
-// 改成你后端服务器的实际地址
-const API_BASE = 'https://你的服务器IP或域名'
+// 改前：
+const API_BASE = process.env.API_BASE_URL || 'http://localhost:8000'
+// 改后：
+const API_BASE = process.env.API_BASE_URL || 'https://trandsai.com'
 ```
 
-或通过环境变量指定（打包时生效）：
+或者不改代码，启动时带环境变量：
+
 ```powershell
-# PowerShell
-$env:API_BASE_URL="https://你的后端地址"; npm run build
+$env:API_BASE_URL="https://trandsai.com"; npm run dev
 ```
 
-### 方案 B：开发调试（手机和电脑同一 WiFi）
+---
 
-修改 `capacitor.config.ts`，取消注释 `server` 配置：
+### 场景 3：打包 APK + 连接生产后端（当前配置）
+
+**已经配好，直接构建即可。**
+
+原理：`.env.production` 中 `VITE_API_BASE_URL=https://trandsai.com`，APK 中所有请求自动指向生产服务器。
+
+```powershell
+cd client
+npm run build          # 自动加载 .env.production
+npx cap sync
+npx cap open android   # 进 Android Studio → Build APK
+```
+
+---
+
+### 场景 4：打包 APK + 连接本地后端（仅同一 WiFi 下调试）
+
+修改 `client/capacitor.config.ts`，让 App 直连你电脑的 dev server：
 
 ```ts
 const config: CapacitorConfig = {
@@ -99,7 +140,17 @@ const config: CapacitorConfig = {
 };
 ```
 
-然后用 `npm run dev` 启动开发服务器，手机上 App 会直接访问你电脑的 dev server，支持热更新调试。
+然后 `npm run dev` 启动，Android Studio 中 ▶ Run 到手机即可热更新调试。
+
+---
+
+### 环境变量文件速查
+
+| 文件 | 何时生效 | 当前配置 |
+|---|---|---|
+| `.env.development` | `npm run dev` | `VITE_API_BASE_URL=`（空，走代理） |
+| `.env.production` | `npm run build` | `VITE_API_BASE_URL=https://trandsai.com` |
+| `vite.config.ts:21` | `npm run dev`（代理目标） | `http://localhost:8000` |
 
 ---
 
