@@ -326,6 +326,7 @@ export function CreateCompanion() {
   const [chatHistoryRaw, setChatHistoryRaw] = useState("");
   const [chatHistoryCount, setChatHistoryCount] = useState(0);
   const [dynamicCities, setDynamicCities] = useState<Record<string, string[]>>(citiesByLang);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // 动态获取城市列表
   useEffect(() => {
@@ -465,21 +466,38 @@ export function CreateCompanion() {
     return result;
   };
 
+  // 必填字段check
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    const personalityStr = selectedPersonalities.join("、");
+
+    if (!name.trim()) newErrors.name = "姓名不能为空，请填写内容";
+    if (!age) newErrors.age = "年龄不能为空，请填写内容";
+    if (!gender) newErrors.gender = "性别不能为空，请填写内容";
+    if (!city.trim()) newErrors.city = "城市不能为空，请填写内容";
+    if (!personalityStr.trim()) newErrors.personality = "性格不能为空，请填写内容";
+    if (!mbti.trim()) newErrors.mbti = "MBTI不能为空，请填写内容";
+    if (!sexualOrientation.trim()) newErrors.sexualOrientation = "性取向不能为空，请填写内容";
+    if (!background.trim()) newErrors.background = "背景故事不能为空，请填写内容";
+    else if (background.trim().length < 5) newErrors.background = "背景故事内容至少填写5个字符，请补充完整描述";
+    if (!speakingStyle.trim()) newErrors.speakingStyle = "说话风格不能为空，请填写内容";
+    else if (speakingStyle.trim().length < 5) newErrors.speakingStyle = "说话风格内容至少填写5个字符，请补充完整描述";
+    if (personalityStr.trim() && personalityStr.trim().length < 5) newErrors.personality = "性格内容至少填写5个字符，请补充完整描述";
+
+    setErrors(newErrors);
+    
+    const errorList = Object.values(newErrors);
+    if (errorList.length > 0) {
+      alert(errorList.join("\n"));
+    }
+    
+    return errorList.length === 0;
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 获取创建者标识：优先用用户名，否则用 device_id
-    let createdBy = "";
-    try {
-      const userInfoStr = localStorage.getItem("user_info");
-      if (userInfoStr) {
-        const userInfo = JSON.parse(userInfoStr);
-        createdBy = userInfo.nickname || userInfo.username || "";
-      }
-    } catch {}
-    if (!createdBy) {
-      createdBy = localStorage.getItem("device_id") || "";
-    }
+    if (!validateForm()) return;
 
     const payload = {
       name,
@@ -487,24 +505,11 @@ export function CreateCompanion() {
       gender: gender === "male" ? "男" : "女",
       city,
       personality: selectedPersonalities.join("、"),
-      background,
-      speech_style: speakingStyle,
-      hobbies,
-      values,
-      fears,
-      love_view: loveView,
-      daily_routine: dailyRoutine,
-      favorite_things: favoriteThings,
       mbti,
       sexual_orientation: sexualOrientation,
-      life_story: lifeStory,
-      cultural_values: culturalValues,
-      gender_perspective: genderPerspective,
-      created_by: createdBy,
-      // 机器人资料的 language 基于地区（city）确定，与地区信息保持一致
-      // 用户对话时会根据 UI 界面语言（i18n.language）动态选择提示词
-      language: inferCompanionLanguage(city),
-      chat_history: parseChatHistory(chatHistoryRaw),
+      avatar_url: "__GENERATING__",
+      background,
+      speech_style: speakingStyle,
     };
 
     try {
@@ -556,20 +561,28 @@ export function CreateCompanion() {
       <form onSubmit={handleCreate} className="px-4 py-6 pb-24 space-y-6">
         <div className="space-y-4">
           <div>
-            <label className="text-foreground text-sm mb-2 block">{t('createCompanion.name')}</label>
+            <label className="text-foreground text-sm mb-2 block">
+              {t('createCompanion.name')}
+              <span className="text-red-500 ml-1">*</span>
+            </label>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t('createCompanion.namePlaceholder')}
-              className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
-              required
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors ${
+                errors.name ? 'border-red-500' : 'border-border'
+              }`}
             />
+            {errors.name && (
+              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+            )}
           </div>
 
           <div>
             <label className="text-foreground text-sm mb-2 block">
               {t('createCompanion.ageLabel', { age } as any) as string}
+              <span className="text-red-500 ml-1">*</span>
             </label>
             <input
               type="range"
@@ -583,10 +596,16 @@ export function CreateCompanion() {
               <span>18</span>
               <span>35</span>
             </div>
+            {errors.age && (
+              <p className="text-red-500 text-xs mt-1">{errors.age}</p>
+            )}
           </div>
 
           <div>
-            <label className="text-foreground text-sm mb-2 block">{t('createCompanion.gender')}</label>
+            <label className="text-foreground text-sm mb-2 block">
+              {t('createCompanion.gender')}
+              <span className="text-red-500 ml-1">*</span>
+            </label>
             <div className="flex gap-3">
               <button
                 type="button"
@@ -611,14 +630,22 @@ export function CreateCompanion() {
                 {t('register.female')}
               </button>
             </div>
+            {errors.gender && (
+              <p className="text-red-500 text-xs mt-1">{errors.gender}</p>
+            )}
           </div>
 
           <div>
-            <label className="text-foreground text-sm mb-2 block">{t('createCompanion.sexualOrientation')}</label>
+            <label className="text-foreground text-sm mb-2 block">
+              {t('createCompanion.sexualOrientation')}
+              <span className="text-red-500 ml-1">*</span>
+            </label>
             <select
               value={sexualOrientation}
               onChange={(e) => setSexualOrientation(e.target.value)}
-              className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none"
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none transition-colors ${
+                errors.sexualOrientation ? 'border-red-500' : 'border-border'
+              }`}
             >
               <option value="heterosexual">{t('register.heterosexual')}</option>
               <option value="homosexual">{t('register.homosexual')}</option>
@@ -627,28 +654,44 @@ export function CreateCompanion() {
               <option value="asexual">{t('register.asexual')}</option>
               <option value="secret">{t('register.secret')}</option>
             </select>
+            {errors.sexualOrientation && (
+              <p className="text-red-500 text-xs mt-1">{errors.sexualOrientation}</p>
+            )}
           </div>
 
           <div>
-            <label className="text-foreground text-sm mb-2 block">{t('createCompanion.city')}</label>
+            <label className="text-foreground text-sm mb-2 block">
+              {t('createCompanion.city')}
+              <span className="text-red-500 ml-1">*</span>
+            </label>
             <select
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors ${
+                errors.city ? 'border-red-500' : 'border-border'
+              }`}
             >
               <option value="">{t('createCompanion.cityPlaceholder')}</option>
               {(dynamicCities[i18n.language || "zh"] || dynamicCities["zh"] || []).map((c) => (
                 <option key={c} value={c}>{c}</option>
               ))}
             </select>
+            {errors.city && (
+              <p className="text-red-500 text-xs mt-1">{errors.city}</p>
+            )}
           </div>
 
           <div>
-            <label className="text-foreground text-sm mb-2 block">{t('createCompanion.mbti')}</label>
+            <label className="text-foreground text-sm mb-2 block">
+              {t('createCompanion.mbti')}
+              <span className="text-red-500 ml-1">*</span>
+            </label>
             <select
               value={mbti}
               onChange={(e) => setMbti(e.target.value)}
-              className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none"
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none transition-colors ${
+                errors.mbti ? 'border-red-500' : 'border-border'
+              }`}
             >
               <option value="">{t('createCompanion.mbtiPlaceholder')}</option>
               <option value="INTJ">INTJ - 建筑师</option>
@@ -668,11 +711,15 @@ export function CreateCompanion() {
               <option value="ESTP">ESTP - 企业家</option>
               <option value="ESFP">ESFP - 表演者</option>
             </select>
+            {errors.mbti && (
+              <p className="text-red-500 text-xs mt-1">{errors.mbti}</p>
+            )}
           </div>
 
           <div>
             <label className="text-foreground text-sm mb-3 block">
               {t('createCompanion.personalityLabel')}
+              <span className="text-red-500 ml-1">*</span>
             </label>
             <div className="flex flex-wrap gap-2">
               {personalities.map((personality) => (
@@ -693,30 +740,45 @@ export function CreateCompanion() {
                 </button>
               ))}
             </div>
+            {errors.personality && (
+              <p className="text-red-500 text-xs mt-1">{errors.personality}</p>
+            )}
           </div>
 
           <div>
             <label className="text-foreground text-sm mb-2 block">
               {t('createCompanion.background')}
+              <span className="text-red-500 ml-1">*</span>
             </label>
             <textarea
               value={background}
               onChange={(e) => setBackground(e.target.value)}
               placeholder={t('createCompanion.backgroundPlaceholder')}
-              className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-24 resize-none"
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-24 resize-none transition-colors ${
+                errors.background ? 'border-red-500' : 'border-border'
+              }`}
             />
+            {errors.background && (
+              <p className="text-red-500 text-xs mt-1">{errors.background}</p>
+            )}
           </div>
 
           <div>
             <label className="text-foreground text-sm mb-2 block">
               {t('createCompanion.speechStyle')}
+              <span className="text-red-500 ml-1">*</span>
             </label>
             <textarea
               value={speakingStyle}
               onChange={(e) => setSpeakingStyle(e.target.value)}
               placeholder={t('createCompanion.speechStylePlaceholder')}
-              className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-24 resize-none"
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-24 resize-none transition-colors ${
+                errors.speakingStyle ? 'border-red-500' : 'border-border'
+              }`}
             />
+            {errors.speakingStyle && (
+              <p className="text-red-500 text-xs mt-1">{errors.speakingStyle}</p>
+            )}
           </div>
 
           <div className="border-t border-border pt-4">
