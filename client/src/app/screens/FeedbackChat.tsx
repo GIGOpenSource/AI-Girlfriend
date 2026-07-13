@@ -106,7 +106,15 @@ export function FeedbackChat() {
 
   const formatTime = (iso: string) => {
     if (!iso) return "";
-    return new Date(iso).toLocaleTimeString(undefined, {
+    let normalized = iso.trim();
+    if (!normalized.endsWith("Z") && !normalized.match(/[+-]\d{2}:\d{2}$/)) {
+      normalized = `${normalized}Z`;
+    }
+    const date = new Date(normalized);
+    if (isNaN(date.getTime())) return "";
+    return date.toLocaleString(undefined, {
+      month: "short",
+      day: "numeric",
       hour: "2-digit",
       minute: "2-digit",
     });
