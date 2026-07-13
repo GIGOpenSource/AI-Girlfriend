@@ -36,8 +36,12 @@ function loadHiddenCompanionIds(): Set<string> {
 }
 
 /** 仅统计与首页「恋人条」一致：有过对话的智能体 */
+// function hasChattedCompanion(c: { state?: { turns?: number }; last_message?: string | null }) {
+//   return (c.state?.turns ?? 0) > 0 || Boolean(c.last_message);
+// }
+/** 临时：展示所有智能体（不按是否对话过滤），后期复原请取消上面注释 */
 function hasChattedCompanion(c: { state?: { turns?: number }; last_message?: string | null }) {
-  return (c.state?.turns ?? 0) > 0 || Boolean(c.last_message);
+  return true;
 }
 
 export function MyCompanions() {

@@ -542,11 +542,11 @@ export function Profile() {
 
       {showLangPicker && (
         <div
-          className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center px-0 sm:px-4"
+          className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center px-0 sm:px-4"
           onClick={() => setShowLangPicker(false)}
         >
           <div
-            className="bg-card border border-border rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-sm"
+            className="bg-card border border-border rounded-t-2xl sm:rounded-2xl p-6 w-full max-w-sm mb-16 sm:mb-0 max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between mb-4">
