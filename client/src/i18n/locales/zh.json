@@ -173,7 +173,9 @@
     "cat_psychology": "情感心理",
     "cat_tips": "经验攻略",
     "cat_story": "故事分享",
-    "cat_offtopic": "闲聊杂谈"
+    "cat_offtopic": "闲聊杂谈",
+    "postImages": "图片",
+    "addImage": "添加图片"
   },
   "profile": {
     "title": "我的",

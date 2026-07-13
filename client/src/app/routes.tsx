@@ -96,9 +96,12 @@ function RootLayout() {
   }, []);
 
   return (
-    <Suspense fallback={null}>
-      <Outlet />
-    </Suspense>
+    // 全局窄容器：Web 端居中变窄、两侧留白；移动端屏宽 < 672px 时 max-w-2xl 不生效
+    <div className="mx-auto max-w-2xl min-h-screen bg-background">
+      <Suspense fallback={null}>
+        <Outlet />
+      </Suspense>
+    </div>
   );
 }
 

@@ -63,7 +63,7 @@ export function TabBar() {
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 h-16 bg-card border-t border-border z-50">
+    <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-2xl h-16 bg-card border-t border-border z-50">
       <div className="flex h-full items-center justify-around px-4">
         {tabs.map((tab) => {
           const isActive = location.pathname === tab.path;

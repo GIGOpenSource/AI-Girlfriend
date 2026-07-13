@@ -173,7 +173,9 @@
     "cat_psychology": "Psychology",
     "cat_tips": "Tips",
     "cat_story": "Stories",
-    "cat_offtopic": "Off-topic"
+    "cat_offtopic": "Off-topic",
+    "postImages": "Images",
+    "addImage": "Add Image"
   },
   "profile": {
     "title": "Profile",

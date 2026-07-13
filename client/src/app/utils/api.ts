@@ -20,13 +20,14 @@ export async function apiFetch<T = any>(
   options: RequestInit = {}
 ): Promise<T> {
   const token = localStorage.getItem('user_token');
-  const headers: HeadersInit = {
+  // 使用 Record<string, string> 避免 HeadersInit 联合类型的索引赋值问题
+  const headersObj: Record<string, string> = {
     'Content-Type': 'application/json',
-    ...options.headers,
+    ...(options.headers as Record<string, string> || {}),
   };
 
   if (token) {
-    headers['x-token'] = token;
+    headersObj['x-token'] = token;
   }
 
   // 支持相对路径和绝对
@@ -35,7 +36,7 @@ export async function apiFetch<T = any>(
   const config: RequestInit = {
     credentials: 'include',
     ...options,
-    headers,
+    headers: headersObj,
   };
 
   try {

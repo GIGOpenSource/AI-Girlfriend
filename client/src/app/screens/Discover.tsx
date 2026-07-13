@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { sortCompanionsByUserLang } from "../utils/companionLang";
 import { formatAffectionDisplay } from "../utils/formatAffection";
+import { normalizeMediaUrl } from "../utils/media";
 
 interface PostItem {
   id: number;
