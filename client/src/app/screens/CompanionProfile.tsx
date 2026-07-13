@@ -89,6 +89,7 @@ export function CompanionProfile() {
       })
       .then((data) => {
         if (data) setCompanion(data);
+        console.log("data",data)
       })
       .catch((err) => {
         console.error("加载智能体资料失败:", err);
@@ -186,7 +187,7 @@ export function CompanionProfile() {
           <button onClick={() => navigate(-1)} className="p-2 -ml-2" data-analytics-button="companion-profile-back" data-analytics-name="伴侣详情页返回">
             <ArrowLeft className="w-6 h-6 text-foreground" />
           </button>
-          <h1 className="text-lg text-foreground">{t('companionProfile.title')}</h1>
+          <h1 className="text-lg text-foreground">{profile.name}</h1>
           <div className="relative" ref={menuRef}>
             <button
               className="p-2 -mr-2"
