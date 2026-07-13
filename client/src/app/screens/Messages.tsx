@@ -54,12 +54,9 @@ export function Messages() {
     fetch("/companions", { headers: getAuthHeaders() })
       .then((r) => r.json())
       .then((data) => {
-        // 只展示有过对话的智能体（turns > 0 或有最后一条消息）
-        const hasChat = (data || []).filter(
-          (c: any) => c.state?.turns > 0 || c.last_message
-        );
+        const allCompanions = (data || []);
         const MAX_BACKGROUND_WS = 12;
-        const scored = [...hasChat].sort((a: any, b: any) => {
+        const scored = [...allCompanions].sort((a: any, b: any) => {
           const ta = new Date(a.last_message_time || 0).getTime();
           const tb = new Date(b.last_message_time || 0).getTime();
           return tb - ta;
@@ -69,7 +66,7 @@ export function Messages() {
           if (!id) return;
           window.setTimeout(() => connect(id), idx * 60);
         });
-        setRawCompanions(hasChat);
+        setRawCompanions(allCompanions);
       })
       .catch((err) => {
         console.error("加载消息列表失败:", err);
