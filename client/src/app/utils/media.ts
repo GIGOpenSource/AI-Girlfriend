@@ -1,23 +1,12 @@
 const LOCAL_HOST_RE = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?/i;
 
 /**
- * 仅对跨域图片请求设置 crossOrigin；同源（经 Vite 代理后多为同源）不设置，避免无谓 CORS 与加载失败。
+ * 图片仅用于展示（无 canvas 取像素需求），故一律不设 crossOrigin。
+ * 设置 crossOrigin="anonymous" 会强制浏览器走 CORS 校验，外链图床（如 COS）
+ * 若未对当前来源（如局域网 IP）开放 CORS 白名单，图片会被直接拦截而加载失败。
  */
-export function imageCrossOriginForUrl(url: string): "anonymous" | undefined {
-  if (!url || url.startsWith("data:") || url.startsWith("blob:")) {
-    return undefined;
-  }
-  try {
-    const resolved = /^https?:\/\//i.test(url)
-      ? new URL(url)
-      : new URL(url, typeof window !== "undefined" ? window.location.href : "http://localhost/");
-    if (typeof window !== "undefined" && resolved.origin === window.location.origin) {
-      return undefined;
-    }
-    return "anonymous";
-  } catch {
-    return undefined;
-  }
+export function imageCrossOriginForUrl(_url: string): "anonymous" | undefined {
+  return undefined;
 }
 
 /**
@@ -58,9 +47,21 @@ export function normalizeMediaUrl(src?: string | null): string | undefined {
     return `${window.location.protocol}${trimmed}`;
   }
 
-  // 绝对 URL：修正 localhost 主机
+  // 绝对 URL：修正 localhost / 127.0.0.1 / 0.0.0.0 / 当前站点 LAN IP 等主机。
+  // 统一改写为「当前页面源 + 路径」，使图片经 Vite 代理（/data → 后端）加载，
+  // 避免局域网以 IP 访问时：1) 直接打后端 8000 端口被防火墙/绑定拦截；2) 跨源触发 CORS 加载失败。
   if (/^https?:\/\//i.test(trimmed)) {
-    if (LOCAL_HOST_RE.test(trimmed)) {
+    const isLocalHost = LOCAL_HOST_RE.test(trimmed);
+    let isSameHost = false;
+    try {
+      if (typeof window !== "undefined") {
+        const parsed = new URL(trimmed);
+        isSameHost = parsed.hostname === window.location.hostname;
+      }
+    } catch {
+      isSameHost = false;
+    }
+    if (isLocalHost || isSameHost) {
       try {
         const parsed = new URL(trimmed);
         return `${window.location.origin}${parsed.pathname}${parsed.search}${parsed.hash}`;
