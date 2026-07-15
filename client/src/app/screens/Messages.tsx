@@ -50,12 +50,44 @@ export function Messages() {
   const [showMenu, setShowMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
+  const buildConversations = useCallback((companions: any[]) => {
+    const list: Conversation[] = companions.map((c: any) => {
+      const id = c.profile?.id || "";
+      const lastMsg = lastMessages[id];
+      return {
+        id,
+        name: c.profile?.name || t('chat.defaultName'),
+        avatar:
+          c.avatar ||
+          `https://api.dicebear.com/7.x/avataaars/svg?seed=${c.profile?.id}`,
+        lastMessage: lastMsg?.text || c.last_message || "",
+        time: lastMsg?.fullTime
+          ? formatRelativeTime(lastMsg.fullTime)
+          : formatRelativeTime(c.last_message_time),
+        rawTime: lastMsg?.fullTime || c.last_message_time || "",
+        unread: unreadCounts[id] || 0,
+        avatar_generating: c.avatar_generating,
+      };
+    });
+
+    list.sort((a, b) => {
+      if (b.unread !== a.unread) return b.unread - a.unread;
+      const aTime = a.rawTime ? new Date(a.rawTime).getTime() : 0;
+      const bTime = b.rawTime ? new Date(b.rawTime).getTime() : 0;
+      return bTime - aTime;
+    });
+
+    return list;
+  }, [lastMessages, unreadCounts, formatRelativeTime, t]);
+
   const loadConversations = useCallback(() => {
     fetch("/companions", { headers: getAuthHeaders() })
       .then((r) => r.json())
       .then((data) => {
         const allCompanions = (data || []);
-        const MAX_BACKGROUND_WS = 12;
+        setRawCompanions(allCompanions);
+
+        const MAX_BACKGROUND_WS = 6;
         const scored = [...allCompanions].sort((a: any, b: any) => {
           const ta = new Date(a.last_message_time || 0).getTime();
           const tb = new Date(b.last_message_time || 0).getTime();
@@ -64,9 +96,8 @@ export function Messages() {
         scored.slice(0, MAX_BACKGROUND_WS).forEach((c: any, idx: number) => {
           const id = c.profile?.id || c.id;
           if (!id) return;
-          window.setTimeout(() => connect(id), idx * 60);
+          window.setTimeout(() => connect(id), idx * 100);
         });
-        setRawCompanions(allCompanions);
       })
       .catch((err) => {
         console.error("加载消息列表失败:", err);
@@ -75,6 +106,37 @@ export function Messages() {
         setLoading(false);
       });
   }, [connect]);
+
+  // 优先从本地缓存恢复会话列表
+  useEffect(() => {
+    const savedLastMessages = localStorage.getItem("chat_last_messages");
+    if (savedLastMessages) {
+      try {
+        const cachedLastMsgs = JSON.parse(savedLastMessages) as Record<string, { text: string; fullTime?: string }>;
+        const companionIds = Object.keys(cachedLastMsgs);
+        if (companionIds.length > 0) {
+          const cachedConvs: Conversation[] = companionIds.map((id) => ({
+            id,
+            name: id,
+            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`,
+            lastMessage: cachedLastMsgs[id]?.text || "",
+            time: cachedLastMsgs[id]?.fullTime ? formatRelativeTime(cachedLastMsgs[id]!.fullTime) : "",
+            rawTime: cachedLastMsgs[id]?.fullTime || "",
+            unread: unreadCounts[id] || 0,
+          }));
+          cachedConvs.sort((a, b) => {
+            if (b.unread !== a.unread) return b.unread - a.unread;
+            const aTime = a.rawTime ? new Date(a.rawTime).getTime() : 0;
+            const bTime = b.rawTime ? new Date(b.rawTime).getTime() : 0;
+            return bTime - aTime;
+          });
+          setConversations(cachedConvs);
+        }
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
 
   // 组件挂载时加载
   useEffect(() => {
@@ -96,38 +158,8 @@ export function Messages() {
   // 根据未读数、最后消息、typing 状态的变化更新列表（不重新 fetch）
   useEffect(() => {
     if (rawCompanions.length === 0) return;
-
-    const list: Conversation[] = rawCompanions.map((c: any) => {
-      const id = c.profile?.id || "";
-      const lastMsg = lastMessages[id];
-      return {
-        id,
-        name: c.profile?.name || t('chat.defaultName'),
-        avatar:
-          c.avatar ||
-          `https://api.dicebear.com/7.x/avataaars/svg?seed=${c.profile?.id}`,
-        lastMessage: lastMsg?.text || c.last_message || "",
-        time: lastMsg?.fullTime
-          ? formatRelativeTime(lastMsg.fullTime)
-          : formatRelativeTime(c.last_message_time),
-        rawTime: lastMsg?.fullTime || c.last_message_time || "",
-        unread: unreadCounts[id] || 0,
-        avatar_generating: c.avatar_generating,
-      };
-    });
-
-    // 排序：未读数降序 > 最近消息时间倒序 > 其他
-    list.sort((a, b) => {
-      // 1. 未读数多的优先
-      if (b.unread !== a.unread) return b.unread - a.unread;
-      // 2. 有最近消息的优先（按时间倒序）
-      const aTime = a.rawTime ? new Date(a.rawTime).getTime() : 0;
-      const bTime = b.rawTime ? new Date(b.rawTime).getTime() : 0;
-      return bTime - aTime;
-    });
-
-    setConversations(list);
-  }, [rawCompanions, unreadCounts, lastMessages, formatRelativeTime, t]);
+    setConversations(buildConversations(rawCompanions));
+  }, [rawCompanions, unreadCounts, lastMessages, buildConversations]);
 
   const handleOpenChat = (id: string) => {
     connect(id);
