@@ -43,6 +43,7 @@ interface MomentItem {
   caption: string;
   likes_count: number;
   comments_count: number;
+  liked?: boolean;
   created_at: string;
 }
 
@@ -481,7 +482,7 @@ export function CompanionProfile() {
                     <p className="text-foreground text-sm mb-3">{m.caption}</p>
                     <div className="flex items-center gap-4 text-muted-foreground text-xs">
                       <span className="flex items-center gap-1">
-                        <span>❤️</span> {m.likes_count}
+                        <span className={m.liked ? "text-pink-500" : "text-muted-foreground"}>{m.liked ? "❤️" : "🤍"}</span> {m.likes_count}
                       </span>
                       <span className="flex items-center gap-1">
                         <span>💬</span> {m.comments_count}

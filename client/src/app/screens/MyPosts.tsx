@@ -190,8 +190,8 @@ export function MyPosts() {
               {/* Actions */}
               <div className="flex items-center gap-4 px-4 py-3 border-t border-border/50">
                 <div className="flex items-center gap-1.5 text-sm">
-                  <Heart className={`w-4 h-4 ${post.likes_count > 0 ? "text-pink-500 fill-pink-500" : "text-muted-foreground"}`} />
-                  <span className={post.likes_count > 0 ? "text-pink-500" : "text-muted-foreground"}>{post.likes_count || 0}</span>
+                  <Heart className={`w-4 h-4 ${post.liked ? "text-pink-500 fill-pink-500" : "text-muted-foreground"}`} />
+                  <span className={post.liked ? "text-pink-500" : "text-muted-foreground"}>{post.likes_count || 0}</span>
                 </div>
                 <div className="flex items-center gap-1.5 text-sm">
                   <MessageSquare className="w-4 h-4 text-muted-foreground" />
