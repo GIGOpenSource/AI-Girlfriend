@@ -137,7 +137,13 @@ export function Notifications() {
         return bTime - aTime;
       });
 
-      setNotifications(list);
+      // 进入通知页面后，自动标记所有通知为已读
+      localStorage.setItem("moments_last_viewed", new Date().toISOString());
+      const allSysIds = sysNotifications.map((n) => n.id);
+      localStorage.setItem(viewedSysKey, JSON.stringify(allSysIds));
+
+      // 更新通知列表，全部标记为已读
+      setNotifications(list.map((n) => ({ ...n, read: true })));
     } catch (e) {
       console.error("加载通知失败:", e);
     } finally {
