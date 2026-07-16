@@ -166,20 +166,20 @@ export function Home() {
     orientation: momentFilterOrientation,
   };
 
-  // ───────────────── 工具判断 ─────────────────
+  // ───────────────── 工具判断（暂不使用）─────────────────
   // 判断智能体是否与用户有过对话
   //   - turns > 0（对话轮数 > 0）
   //   - 或 last_message 有值（有过最后一条消息）
-  const hasChatted = (c: { state?: { turns?: number }; last_message?: string | null }) =>
-    (c.state?.turns ?? 0) > 0 || Boolean(c.last_message);
+  // const hasChatted = (c: { state?: { turns?: number }; last_message?: string | null }) =>
+  //   (c.state?.turns ?? 0) > 0 || Boolean(c.last_message);
 
   // ====================================================================
   // 加载顶部智能体头像条
   // 流程：
   //   1. GET /companions 获取全部智能体
   //   2. 按用户语言排序（同语言优先）
-  //   3. 过滤出有过对话的（hasChatted）
-  //   4. 映射为 Companion 格式并更新 state
+  //   3. 映射为 Companion 格式并更新 state
+  // （旧逻辑：filter(hasChatted) 只显示有对话记录的，先注释保留）
   // ====================================================================
   const loadCompanionStrip = useCallback(async () => {
     // apiFetch 自动注入 x-token，后端可按登录账户分流
@@ -188,11 +188,11 @@ export function Home() {
     const userLang = i18n.language || "zh";
     // 按语言排序，当前语言相同排最前
     const sorted = sortCompanionsByUserLang(companionsRes || [], userLang);
-    // 只显示有对话记录的
-    const withChat = sorted.filter((c: any) => hasChatted(c));
-    console.log("过滤后剩余:", withChat);
+    // [暂时] 不做过滤，后端返回多少就显示多少
+    // 旧逻辑: const withChat = sorted.filter((c: any) => hasChatted(c));
+    console.log("顶部智能体数量:", sorted.length);
     setCompanions(
-      withChat.map((c: any) => ({
+      sorted.map((c: any) => ({
         id: c.profile?.id || "",
         name: c.profile?.name || t("home.defaultCompanionName"),
         // 没有头像时用 dicebear 生成默认头像

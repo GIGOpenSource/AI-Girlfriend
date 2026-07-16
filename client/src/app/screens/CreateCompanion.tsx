@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router";
 import { ArrowLeft, Check, Wand2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { inferCompanionLanguage } from "../utils/companionLang";
+import apiFetch from "../utils/api";
 
 const citiesByLang: Record<string, string[]> = {
   zh: ["北京", "上海", "成都", "广州", "深圳", "杭州", "武汉", "西安"],
@@ -331,9 +332,8 @@ export function CreateCompanion() {
   // 动态获取城市列表
   useEffect(() => {
     const lang = i18n.language || "zh";
-    fetch(`/api/culture/cities?lang=${lang}`)
-      .then((r) => r.ok ? r.json() : null)
-      .then((data) => {
+    apiFetch(`/api/culture/cities?lang=${lang}`)
+      .then((data: any) => {
         if (data?.cities?.length) {
           setDynamicCities((prev) => ({ ...prev, [lang]: data.cities }));
         }
@@ -393,15 +393,10 @@ export function CreateCompanion() {
     // 尝试从 API 获取一个随机姓名替换
     const apiGender = persona.gender === "男" ? "male" : "female";
     try {
-      const res = await fetch(`/api/culture/names?lang=${lang}&gender=${apiGender}&count=8`);
-      if (res.ok) {
-        const data = await res.json();
-        if (data.names?.length) {
-          const randomName = data.names[Math.floor(Math.random() * data.names.length)];
-          setName(randomName);
-        } else {
-          setName(persona.name);
-        }
+      const data = await apiFetch(`/api/culture/names?lang=${lang}&gender=${apiGender}&count=8`);
+      if (data.names?.length) {
+        const randomName = data.names[Math.floor(Math.random() * data.names.length)];
+        setName(randomName);
       } else {
         setName(persona.name);
       }
@@ -513,22 +508,14 @@ export function CreateCompanion() {
     };
 
     try {
-      const res = await fetch("/companions", {
+      await apiFetch("/companions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        alert(t('createCompanion.alertCreateFailed', { error: err.detail || res.statusText } as any));
-        return;
-      }
-
       navigate("/messages");
-    } catch (err) {
-      console.error("创建智能体失败:", err);
-      alert(t('createCompanion.alertNetworkCreateFailed'));
+    } catch {
+      // apiFetch 内部已统一处理错误提示和401跳转
     }
   };
 

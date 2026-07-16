@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { AvatarImage } from "../components/AvatarImage";
 import { normalizeMediaUrl } from "../utils/media";
 import { ArrowLeft, MessageSquare, Heart, Trash2, User } from "lucide-react";
+import apiFetch from "../utils/api";
 
 interface PostItem {
   id: number;
@@ -46,23 +47,7 @@ export function MyPosts() {
   const fetchMyPosts = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("user_token");
-      if (!token) {
-        setPosts([]);
-        setLoading(false);
-        return;
-      }
-      const res = await fetch("/api/posts/my", {
-        headers: { "x-token": token },
-      });
-      if (res.status === 401) {
-        localStorage.removeItem("user_token");
-        localStorage.removeItem("user_info");
-        setPosts([]);
-        setLoading(false);
-        return;
-      }
-      const data = await res.json();
+      const data = await apiFetch("/api/posts/my");
       setPosts(data.posts || []);
     } catch (err) {
       console.error("加载我的帖子失败:", err);
@@ -78,20 +63,10 @@ export function MyPosts() {
   const handleDelete = async (postId: number) => {
     if (!confirm(t("common.confirm"))) return;
     try {
-      const token = localStorage.getItem("user_token");
-      if (!token) return;
-      const res = await fetch(`/api/posts/${postId}`, {
-        method: "DELETE",
-        headers: { "x-token": token },
-      });
-      if (res.ok) {
-        setPosts((prev) => prev.filter((p) => p.id !== postId));
-      } else {
-        alert(t("common.failed"));
-      }
-    } catch (e) {
-      console.error("删除帖子失败:", e);
-      alert(t("common.networkError"));
+      await apiFetch(`/api/posts/${postId}`, { method: "DELETE" });
+      setPosts((prev) => prev.filter((p) => p.id !== postId));
+    } catch {
+      // apiFetch 内部已统一处理错误和401
     }
   };
 

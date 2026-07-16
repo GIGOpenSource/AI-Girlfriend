@@ -9,6 +9,7 @@ import {
   Info,
   Bell,
 } from "lucide-react";
+import apiFetch from "../utils/api";
 
 type NotificationType = "moment" | "system";
 type FilterType = "all" | NotificationType;
@@ -84,10 +85,10 @@ export function Notifications() {
     setLoading(true);
     try {
       const [momentsRes, sysNotifRes] = await Promise.all([
-        fetch(`/api/moments?limit=20&lang=${encodeURIComponent(i18n.language || "zh")}`, {
+        apiFetch(`/api/moments?limit=20&lang=${encodeURIComponent(i18n.language || "zh")}`, {
           headers: { "x-device-id": deviceId },
-        }).then((r) => r.json()),
-        fetch(`/api/notifications?language=${i18n.language}&limit=20`).then((r) => r.json()),
+        }),
+        apiFetch(`/api/notifications?language=${i18n.language}&limit=20`),
       ]);
 
       const list: NotificationItem[] = [];

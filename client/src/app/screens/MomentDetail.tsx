@@ -10,6 +10,7 @@ import {
   X,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import apiFetch from "../utils/api";
 
 interface MomentDetailData {
   id: number;
@@ -72,21 +73,10 @@ export function MomentDetail() {
     if (!momentId) return;
     setLoading(true);
     try {
-      const res = await fetch(`/api/moments/${momentId}`, {
+      const data = await apiFetch(`/api/moments/${momentId}`, {
         headers: { "x-device-id": deviceId },
       });
-      if (res.status === 401) {
-        localStorage.removeItem("user_token");
-        localStorage.removeItem("user_info");
-        navigate("/home");
-        return;
-      }
-      if (res.ok) {
-        const data = await res.json();
-        setMoment(data);
-      } else {
-        navigate("/home");
-      }
+      setMoment(data);
     } catch (err) {
       console.error("加载朋友圈失败:", err);
     } finally {
@@ -101,16 +91,10 @@ export function MomentDetail() {
   const handleLike = async () => {
     if (!moment) return;
     try {
-      const res = await fetch(`/api/moments/${moment.id}/like`, {
+      const data = await apiFetch(`/api/moments/${moment.id}/like`, {
         method: "POST",
         headers: { "x-device-id": deviceId },
       });
-      if (res.status === 401) {
-        localStorage.removeItem("user_token");
-        localStorage.removeItem("user_info");
-        return;
-      }
-      const data = await res.json();
       if (data.ok) {
         setMoment((prev) =>
           prev
@@ -132,31 +116,16 @@ export function MomentDetail() {
       if (replyTo) {
         body.parent_id = replyTo.id;
       }
-      const res = await fetch(`/api/moments/${moment.id}/comment`, {
+      await apiFetch(`/api/moments/${moment.id}/comment`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-device-id": deviceId,
-        },
+        headers: { "x-device-id": deviceId },
         body: JSON.stringify(body),
       });
-      if (res.status === 401) {
-        localStorage.removeItem("user_token");
-        localStorage.removeItem("user_info");
-        alert(t("discover.loginExpired"));
-        return;
-      }
-      if (res.ok) {
-        setCommentText("");
-        setReplyTo(null);
-        fetchMoment();
-      } else {
-        const data = await res.json();
-        alert(data.detail || "评论失败");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("网络错误");
+      setCommentText("");
+      setReplyTo(null);
+      fetchMoment();
+    } catch {
+      // apiFetch 内部已统一处理错误和401
     } finally {
       setSending(false);
     }

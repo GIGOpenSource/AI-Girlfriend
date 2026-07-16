@@ -20,6 +20,7 @@ import { useNavigate } from "react-router";
 import { sortCompanionsByUserLang } from "../utils/companionLang";
 import { formatAffectionDisplay } from "../utils/formatAffection";
 import { normalizeMediaUrl } from "../utils/media";
+import apiFetch from "../utils/api";
 
 interface PostItem {
   id: number;
@@ -119,21 +120,10 @@ export function Discover() {
   const fetchPosts = useCallback(async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("user_token");
-      const headers: Record<string, string> = {
-        "x-device-id": deviceId,
-      };
-      if (token) headers["x-token"] = token;
       const url = activeCategory
         ? `/api/posts?limit=50&category=${encodeURIComponent(activeCategory)}`
         : "/api/posts?limit=50";
-      const res = await fetch(url, { headers });
-      if (res.status === 401) {
-        localStorage.removeItem("user_token");
-        localStorage.removeItem("user_info");
-        return;
-      }
-      const data = await res.json();
+      const data = await apiFetch(url, { headers: { "x-device-id": deviceId } });
       setPosts(data.posts || []);
     } catch (err) {
       console.error("加载帖子失败:", err);
@@ -145,13 +135,7 @@ export function Discover() {
   const fetchCompanions = useCallback(async () => {
     setCompanionsLoading(true);
     try {
-      const res = await fetch("/companions");
-      if (res.status === 401) {
-        localStorage.removeItem("user_token");
-        localStorage.removeItem("user_info");
-        return;
-      }
-      const data = await res.json();
+      const data = await apiFetch("/companions");
       const userLang = i18n.language || "zh";
       const sorted = sortCompanionsByUserLang(data || [], userLang);
       setCompanions(sorted);
@@ -180,37 +164,19 @@ export function Discover() {
     if (!title || !content) return;
     setCreating(true);
     try {
-      const token = localStorage.getItem("user_token");
-      const headers: Record<string, string> = {
-        "Content-Type": "application/json",
-        "x-device-id": deviceId,
-      };
-      if (token) headers["x-token"] = token;
-      const res = await fetch("/api/posts", {
+      await apiFetch("/api/posts", {
         method: "POST",
-        headers,
+        headers: { "x-device-id": deviceId },
         body: JSON.stringify({ title, content, category: newCategory, images: newImages }),
       });
-      if (res.status === 401) {
-        localStorage.removeItem("user_token");
-        localStorage.removeItem("user_info");
-        alert(t("discover.loginExpired"));
-        return;
-      }
-      if (res.ok) {
-        setNewTitle("");
-        setNewContent("");
-        setNewCategory("");
-        setNewImages([]);
-        setShowCreate(false);
-        fetchPosts();
-      } else {
-        const data = await res.json();
-        alert(data.detail || t("discover.createFailed"));
-      }
-    } catch (err) {
-      console.error(err);
-      alert(t("common.networkError"));
+      setNewTitle("");
+      setNewContent("");
+      setNewCategory("");
+      setNewImages([]);
+      setShowCreate(false);
+      fetchPosts();
+    } catch {
+      // apiFetch 内部已统一处理错误和401
     } finally {
       setCreating(false);
     }
@@ -229,8 +195,12 @@ export function Discover() {
       for (const file of Array.from(files)) {
         const formData = new FormData();
         formData.append("file", file);
+        const token = localStorage.getItem("user_token");
+        const uploadHeaders: Record<string, string> = {};
+        if (token) uploadHeaders["x-token"] = token;
         const res = await fetch("/api/upload/image", {
           method: "POST",
+          headers: uploadHeaders,
           body: formData,
         });
         if (res.ok) {
@@ -254,21 +224,10 @@ export function Discover() {
 
   const handleLike = async (postId: number) => {
     try {
-      const token = localStorage.getItem("user_token");
-      const headers: Record<string, string> = {
-        "x-device-id": deviceId,
-      };
-      if (token) headers["x-token"] = token;
-      const res = await fetch(`/api/posts/${postId}/like`, {
+      const data = await apiFetch(`/api/posts/${postId}/like`, {
         method: "POST",
-        headers,
+        headers: { "x-device-id": deviceId },
       });
-      if (res.status === 401) {
-        localStorage.removeItem("user_token");
-        localStorage.removeItem("user_info");
-        return;
-      }
-      const data = await res.json();
       if (data.ok) {
         setPosts((prev) =>
           prev.map((p) =>
@@ -299,21 +258,10 @@ export function Discover() {
     const timer = setTimeout(async () => {
       setSearchLoading(true);
       try {
-        const token = localStorage.getItem("user_token");
-        const headers: Record<string, string> = {
-          "x-device-id": deviceId,
-        };
-        if (token) headers["x-token"] = token;
-        const res = await fetch(
+        const data = await apiFetch(
           `/api/posts/search?q=${encodeURIComponent(query)}&limit=50`,
-          { headers }
+          { headers: { "x-device-id": deviceId } }
         );
-        if (res.status === 401) {
-          localStorage.removeItem("user_token");
-          localStorage.removeItem("user_info");
-          return;
-        }
-        const data = await res.json();
         setSearchResults(data.posts || []);
       } catch (err) {
         console.error("搜索失败:", err);
