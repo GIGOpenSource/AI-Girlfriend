@@ -18,6 +18,9 @@ import {
   ChevronRight,
   X,
   Check,
+  Lock,
+  Smartphone,
+  Eye,
 } from "lucide-react";
 import { AvatarImage } from "../components/AvatarImage";
 import { normalizeMediaUrl } from "../utils/media";
@@ -62,6 +65,7 @@ export function Profile() {
   const [editLoading, setEditLoading] = useState(false);
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showSecurity, setShowSecurity] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -71,7 +75,7 @@ export function Profile() {
     { icon: MessageCircle, label: t('profile.intimacyRecord'), requireAuth: true, action: () => navigate("/intimacy-record") },
     { icon: Bell, label: t('profile.notificationSettings'), requireAuth: true, action: () => navigate("/notification-settings") },
     { icon: Globe, label: t('profile.languagePreference'), action: () => setShowLangPicker(true) },
-    { icon: Shield, label: t('profile.accountSecurity'), requireAuth: true, action: () => { if (user) { setEditNickname(user.nickname || user.username || ""); setEditSexualOrientation(user.sexual_orientation || ""); setEditGender(user.gender || "保密"); setEditAge(user.age != null && user.age !== undefined ? String(user.age) : ""); setEditRegion(user.region || ""); setEditOccupation(user.occupation || ""); setShowEditName(true); } } },
+    { icon: Shield, label: t('profile.accountSecurity'), requireAuth: true, action: () => setShowSecurity(true) },
     { icon: Info, label: t('profile.aboutUs'), action: () => setShowAbout(true) },
   ];
 
@@ -620,6 +624,65 @@ export function Profile() {
               <p className="text-center text-foreground font-medium">{t('home.title')}</p>
               <p className="text-center">trandsai</p>
               <p className="text-center">支持多语言 · 多智能体 · 沉浸式聊天</p>
+              <div className="border-t border-border pt-3 mt-3 text-center text-xs">
+                <p>© 2025 trandsai. All rights reserved.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 账号与安全弹窗 */}
+      {showSecurity && (
+        <div
+          className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center px-4"
+          onClick={() => setShowSecurity(false)}
+        >
+          <div
+            className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-foreground text-lg">{t('profile.accountSecurity')}</h3>
+              <button
+                onClick={() => setShowSecurity(false)}
+                className="p-1 rounded-full hover:bg-secondary transition-colors"
+              >
+                <X className="w-5 h-5 text-muted-foreground" />
+              </button>
+            </div>
+            <div className="space-y-3 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center mb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full">
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <div className="border-b border-border pb-3">
+                <p className="text-center text-foreground font-medium">账号与安全</p>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-4 h-4" />
+                    <span>密码保护</span>
+                  </div>
+                  <span className="text-xs text-primary">已开启</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <Smartphone className="w-4 h-4" />
+                    <span>登录设备</span>
+                  </div>
+                  <span className="text-xs">1台设备</span>
+                </div>
+                <div className="flex items-center justify-between p-3 bg-secondary/30 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <Eye className="w-4 h-4" />
+                    <span>隐私设置</span>
+                  </div>
+                  <ChevronRight className="w-4 h-4" />
+                </div>
+              </div>
               <div className="border-t border-border pt-3 mt-3 text-center text-xs">
                 <p>© 2025 trandsai. All rights reserved.</p>
               </div>
