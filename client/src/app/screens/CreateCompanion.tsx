@@ -3,6 +3,8 @@ import { useNavigate, useSearchParams } from "react-router";
 import { ArrowLeft, Check, Wand2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { inferCompanionLanguage } from "../utils/companionLang";
+import { translatePersonalityTag, getPersonalityKey } from "../utils/personalityTags";
+import { api } from "../utils/api";
 
 const citiesByLang: Record<string, string[]> = {
   zh: ["北京", "上海", "成都", "广州", "深圳", "杭州", "武汉", "西安"],
@@ -513,22 +515,13 @@ export function CreateCompanion() {
     };
 
     try {
-      const res = await fetch("/companions", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        alert(t('createCompanion.alertCreateFailed', { error: err.detail || res.statusText } as any));
-        return;
-      }
-
+      await api.post("/companions", payload);
       navigate("/messages");
+      setTimeout(() => {
+        window.location.reload();
+      }, 500);
     } catch (err) {
       console.error("创建智能体失败:", err);
-      alert(t('createCompanion.alertNetworkCreateFailed'));
     }
   };
 
