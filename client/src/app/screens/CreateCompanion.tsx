@@ -478,13 +478,13 @@ export function CreateCompanion() {
     if (!gender) newErrors.gender = "性别不能为空，请填写内容";
     if (!city.trim()) newErrors.city = "城市不能为空，请填写内容";
     if (!personalityStr.trim()) newErrors.personality = "性格不能为空，请填写内容";
+    if (selectedPersonalities.length < 2) newErrors.personality = "性格标签至少选择两个";
     if (!mbti.trim()) newErrors.mbti = "MBTI不能为空，请填写内容";
     if (!sexualOrientation.trim()) newErrors.sexualOrientation = "性取向不能为空，请填写内容";
     if (!background.trim()) newErrors.background = "背景故事不能为空，请填写内容";
     else if (background.trim().length < 5) newErrors.background = "背景故事内容至少填写5个字符，请补充完整描述";
     if (!speakingStyle.trim()) newErrors.speakingStyle = "说话风格不能为空，请填写内容";
     else if (speakingStyle.trim().length < 5) newErrors.speakingStyle = "说话风格内容至少填写5个字符，请补充完整描述";
-    if (personalityStr.trim() && personalityStr.trim().length < 5) newErrors.personality = "性格内容至少填写5个字符，请补充完整描述";
 
     setErrors(newErrors);
     
