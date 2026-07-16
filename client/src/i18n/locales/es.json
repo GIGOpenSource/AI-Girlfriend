@@ -48,6 +48,7 @@
     "secret": "Secreto",
     "registerBtn": "Registrarse",
     "hasAccount": "¿Ya tienes cuenta?",
+    "goLogin": "Iniciar sesión",
     "subtitle": "Comienza tu viaje de amor inmersivo",
     "//errorUsername": "El usuario debe tener al menos 3 caracteres",
     "errorEmail": "Ingrese un correo electrónico válido",

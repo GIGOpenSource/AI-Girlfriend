@@ -48,6 +48,7 @@
     "secret": "비공개",
     "registerBtn": "회원가입",
     "hasAccount": "이미 계정이 있으신가요?",
+    "goLogin": "로그인",
     "subtitle": "몰입형 연애 여정을 시작하세요",
     "//errorUsername": "아이디는 3자 이상이어야 합니다",
     "errorEmail": "유효한 이메일 주소를 입력하세요",

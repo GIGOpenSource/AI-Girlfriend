@@ -48,6 +48,7 @@
     "secret": "Secreto",
     "registerBtn": "Cadastrar",
     "hasAccount": "Já tem conta?",
+    "goLogin": "Entrar",
     "subtitle": "Comece sua jornada de amor imersiva",
     "//errorUsername": "Nome de usuário deve ter pelo menos 3 caracteres",
     "errorEmail": "Insira um e-mail válido",

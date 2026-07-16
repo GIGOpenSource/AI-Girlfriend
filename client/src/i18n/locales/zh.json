@@ -48,6 +48,7 @@
     "secret": "保密",
     "registerBtn": "注册",
     "hasAccount": "已有账号？",
+    "goLogin": "登录",
     "subtitle": "开启沉浸式恋爱之旅",
     "//errorUsername": "用户名至少3个字符",
     "errorEmail": "请输入有效的邮箱地址",

@@ -7,7 +7,7 @@ import {
 } from "./utils/analytics";
 
 // 不需要登录就能访问的路由
-const PUBLIC_PATHS = ["/", "/register"];
+const PUBLIC_PATHS = ["/", "/login", "/register"];
 
 // 路由守卫：未登录自动跳转到登录页
 function authGuardLoader({ request }: { request: Request }) {
@@ -112,6 +112,7 @@ export const router = createBrowserRouter([
     loader: authGuardLoader,
     children: [
       { index: true, Component: Login },
+      { path: "login", Component: Login },
       { path: "register", Component: Register },
       { path: "home", Component: Home },
       { path: "messages", Component: Messages },

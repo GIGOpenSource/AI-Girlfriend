@@ -48,6 +48,7 @@
     "secret": "Secret",
     "registerBtn": "Register",
     "hasAccount": "Already have an account?",
+    "goLogin": "Login",
     "subtitle": "Start your immersive love journey",
     "//errorUsername": "Username must be at least 3 characters",
     "errorEmail": "Please enter a valid email address",

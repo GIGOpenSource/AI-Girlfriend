@@ -48,6 +48,7 @@
     "secret": "Rahasia",
     "registerBtn": "Daftar",
     "hasAccount": "Sudah punya akun?",
+    "goLogin": "Masuk",
     "subtitle": "Mulai perjalanan cinta yang imersif",
     "//errorUsername": "Nama pengguna minimal 3 karakter",
     "errorEmail": "Masukkan alamat email yang valid",

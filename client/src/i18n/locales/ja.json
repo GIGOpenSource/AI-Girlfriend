@@ -48,6 +48,7 @@
     "secret": "秘密",
     "registerBtn": "登録",
     "hasAccount": "既にアカウントをお持ちですか？",
+    "goLogin": "ログイン",
     "subtitle": "没入型恋愛の旅を始めよう",
     "//errorUsername": "ユーザー名は3文字以上にしてください",
     "errorEmail": "有効なメールアドレスを入力してください",

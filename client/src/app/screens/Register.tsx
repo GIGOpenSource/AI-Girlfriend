@@ -180,6 +180,17 @@ export function Register() {
             {t('register.and')}<button className="text-primary">{t('register.privacy')}</button>
           </div>
         </form>
+
+        <div className="text-center mt-6">
+          <button
+            onClick={() => navigate("/login")}
+            data-analytics-button="register-to-login"
+            data-analytics-name="注册页返回登录"
+            className="text-muted-foreground text-sm"
+          >
+            {t('register.hasAccount')}<span className="text-primary ml-1">{t('register.goLogin')}</span>
+          </button>
+        </div>
       </div>
     </div>
   );

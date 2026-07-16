@@ -4,7 +4,7 @@ import { ArrowLeft, Check, Wand2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { inferCompanionLanguage } from "../utils/companionLang";
 import { translatePersonalityTag, getPersonalityKey } from "../utils/personalityTags";
-import { api } from "../utils/api";
+import { api, apiFetch } from "../utils/api";
 
 const citiesByLang: Record<string, string[]> = {
   zh: ["北京", "上海", "成都", "广州", "深圳", "杭州", "武汉", "西安"],
