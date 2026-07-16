@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { AvatarImage } from "../components/AvatarImage";
 import { sortCompanionsByUserLang } from "../utils/companionLang";
 import { formatAffectionDisplay } from "../utils/formatAffection";
+import { getAuthHeaders } from "../utils/authHeaders";
 
 interface CompanionItem {
   id: string;
@@ -68,7 +69,7 @@ export function MyCompanions() {
   }, []);
 
   useEffect(() => {
-    fetch("/companions")
+    fetch("/companions", { headers: getAuthHeaders() })
       .then((r) => {
         if (r.status === 401) {
           localStorage.removeItem("user_token");
