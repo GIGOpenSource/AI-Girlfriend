@@ -30,6 +30,7 @@ interface PostComment {
   id: number;
   user_id: number | null;
   user_name: string;
+  avatar?: string;
   content: string;
   created_at: string;
 }
@@ -280,8 +281,12 @@ export function PostDetail() {
             <div className="space-y-4">
               {post.comments.map((comment) => (
                 <div key={comment.id} className="flex gap-3">
-                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground flex-shrink-0">
-                    <User className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground flex-shrink-0 overflow-hidden">
+                    {comment.avatar ? (
+                      <AvatarImage src={comment.avatar} seed={comment.user_id || "user"} alt="" className="w-full h-full rounded-full object-cover" />
+                    ) : (
+                      <User className="w-4 h-4" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="bg-secondary/50 rounded-xl px-3 py-2">

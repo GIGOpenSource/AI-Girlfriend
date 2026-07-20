@@ -30,6 +30,7 @@ interface MomentDetailData {
 
 interface MomentComment {
   id: number;
+  user_id?: number | null;
   is_user: boolean;
   companion_id: string | null;
   companion_name: string;
@@ -54,6 +55,22 @@ function formatRelativeTime(isoTime: string, t: (k: string, o?: any) => string):
   if (diffHour < 24) return t("home.hoursAgo", { count: diffHour });
   if (diffDay < 7) return t("home.daysAgo", { count: diffDay });
   return date.toLocaleDateString("zh-CN", { month: "short", day: "numeric" });
+}
+
+function getCurrentUserId(): number | null {
+  const infoStr = localStorage.getItem("user_info");
+  if (!infoStr) return null;
+  try {
+    const info = JSON.parse(infoStr);
+    return info.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function isCommentByMe(userId?: number | null): boolean {
+  const currentUserId = getCurrentUserId();
+  return userId != null && currentUserId != null && userId === currentUserId;
 }
 
 export function MomentDetail() {
@@ -255,13 +272,13 @@ export function MomentDetail() {
                   }}
                 >
                   <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-muted-foreground flex-shrink-0 text-xs font-medium">
-                    {comment.is_user ? "我" : comment.companion_name.charAt(0)}
+                    {isCommentByMe(comment.user_id) ? "我" : comment.companion_name.charAt(0)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="bg-secondary/50 rounded-xl px-3 py-2">
                       <p
                         className={`text-xs font-medium mb-0.5 ${
-                          comment.is_user ? "text-pink-500" : "text-primary"
+                          isCommentByMe(comment.user_id) ? "text-pink-500" : "text-primary"
                         }`}
                       >
                         {comment.companion_name}

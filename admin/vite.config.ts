@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-const API_BASE = process.env.API_BASE_URL || 'http://192.168.77.41:8000'
+const API_BASE = process.env.API_BASE_URL || 'http://192.168.77.143:8000'
 
 // https://vite.dev/config/
 export default defineConfig({

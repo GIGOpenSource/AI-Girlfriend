@@ -439,7 +439,7 @@ export function Discover() {
       </div>
 
       {activeTab === "posts" ? (
-        /* Posts List */
+        /* Posts List 帖子列表 */
         <div className="px-4 py-4 space-y-4">
           {isSearchLoading || loading ? (
             <div className="text-center py-12">
@@ -458,7 +458,7 @@ export function Discover() {
                 key={post.id}
                 className="bg-card border border-border rounded-2xl overflow-hidden"
               >
-                {/* Author */}
+                {/* Author 作者 */}
                 <div className="flex items-center gap-3 px-4 pt-4 pb-2">
                   <div className="w-9 h-9 rounded-full bg-gradient-to-br from-pink-400 to-purple-500 flex items-center justify-center text-white text-sm font-medium flex-shrink-0">
                     {post.avatar ? (
@@ -477,7 +477,7 @@ export function Discover() {
                   </div>
                 </div>
 
-                {/* Content */}
+                {/* Content 内容 */}
                 <button
                   onClick={() => navigate(`/discover/post/${post.id}`)}
                   className="w-full text-left px-4 pb-3"
@@ -515,7 +515,7 @@ export function Discover() {
                   </div>
                 )}
 
-                {/* Actions */}
+                {/* Actions 操作 */}
                 <div className="flex items-center justify-between px-4 py-3 border-t border-border/50">
                   <div className="flex items-center gap-4">
                     <button

@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { MomentImage } from "../components/MomentImage";
 import { translatePersonalityTag } from "../utils/personalityTags";
 import { getAuthHeaders } from "../utils/authHeaders";
+import apiFetch from "../utils/api";
 import { formatAffectionDisplay } from "../utils/formatAffection";
 
 interface CompanionData {
@@ -98,13 +99,12 @@ export function CompanionProfile() {
       })
       .finally(() => setLoading(false));
 
-    fetch(`/api/companions/${companionId}/moments`)
-      .then((r) => r.json())
-      .then((data) => {
+    apiFetch(`/api/companions/${companionId}/moments`)
+      .then((data: any) => {
         setMomentsCount(data.total || 0);
         setMoments(data.moments || []);
       })
-      .catch((err) => {
+      .catch((err: any) => {
         console.error("加载Moments失败:", err);
       });
   }, [companionId, navigate, t]);

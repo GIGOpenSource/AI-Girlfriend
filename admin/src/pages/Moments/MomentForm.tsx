@@ -1,10 +1,34 @@
+/**
+ * Moment 新建 / 编辑表单
+ *
+ * 路由：
+ *  - 新建：/moments/new
+ *  - 编辑：/moments/:id/edit
+ *
+ * 逻辑：
+ *  1. 通过 useParams 获取 id，有 id 为编辑模式，否则为新建
+ *  2. 编辑模式下，调用 GET /api/admin/moments?limit=1000 拉取全部列表，
+ *     找到对应 id 的记录并填充表单（companion_id / caption / image_url）
+ *  3. 保存时：
+ *     - 编辑：PUT /api/admin/moments/:id
+ *     - 新建：POST /api/admin/moments
+ *  4. 保存成功后跳转回列表页
+ */
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Form, Input, Button, Space, Card } from 'antd';
+import { Form, Input, Button, Space, Card, Select, Spin } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { adminFetchJson, adminFetch, showSuccess, showError } from '../../api/request';
+import type { CompanionItem } from '../../types';
 
+/**
+ * 表单数据结构（与后端字段对应）
+ * - id: 主键，仅编辑模式使用
+ * - companion_id: 所属 Companion 的 ID
+ * - caption: 动态文字内容
+ * - image_url: 配图 URL，可为 null（无配图）
+ */
 interface MomentData {
   id: number;
   companion_id: string;
@@ -15,11 +39,32 @@ interface MomentData {
 export default function MomentForm() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const isEdit = !!id;
+  const { id } = useParams<{ id: string }>();  // 从 URL 获取 moment id
+  const isEdit = !!id;  // 有 id 则为编辑模式，否则为新建
   const [form] = Form.useForm();
-  const [loading, setLoading] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);   // 数据加载中（仅编辑模式）
+  const [saving, setSaving] = useState(false);     // 保存请求中
+  const [companions, setCompanions] = useState<CompanionItem[]>([]); // 智能体列表
+  const [companionsLoading, setCompanionsLoading] = useState(false);  // 智能体列表加载中
+
+  /** 加载智能体列表，供新建时选择 */
+  const loadCompanions = useCallback(async () => {
+    setCompanionsLoading(true);
+    try {
+      const list = await adminFetchJson<CompanionItem[]>('/api/admin/companions');
+      setCompanions(list || []);
+    } catch {
+      showError(t('toast.loadFailed') as string);
+    } finally {
+      setCompanionsLoading(false);
+    }
+  }, [t]);
+
+  /**
+   * 加载已有 moment 数据并填充表单
+   * 仅编辑模式下执行，通过列表接口找到对应 id 的记录
+   * 使用 useCallback 缓存，避免 useEffect 重复触发
+   */
   const loadData = useCallback(async () => {
     if (!isEdit || !id) return;
     setLoading(true);
@@ -40,13 +85,21 @@ export default function MomentForm() {
     }
   }, [form, id, isEdit, t]);
 
+  // 组件挂载时：加载智能体列表；编辑模式额外加载表单数据
   useEffect(() => {
+    loadCompanions();
     const timer = window.setTimeout(() => {
       void loadData();
     }, 0);
     return () => window.clearTimeout(timer);
-  }, [loadData]);
+  }, [loadData, loadCompanions]);
 
+  /**
+   * 保存表单
+   * 1. 校验表单字段
+   * 2. 根据 isEdit 决定调用 PUT（编辑）或 POST（新建）
+   * 3. 成功后提示并跳转回列表页
+   */
   async function handleSave() {
     const values = await form.validateFields();
     setSaving(true);
@@ -80,6 +133,7 @@ export default function MomentForm() {
 
   return (
     <div>
+      {/* 页头：返回按钮 + 标题（新建 / 编辑） */}
       <div style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
         <Button icon={<ArrowLeftOutlined />} onClick={() => navigate('/moments')}>
           {t('btn.back')}
@@ -87,14 +141,28 @@ export default function MomentForm() {
         <h2 style={{ margin: 0 }}>{isEdit ? t('btn.edit') + ' ' + t('page.moments') : t('btn.new') + ' ' + t('page.moments')}</h2>
       </div>
 
+      {/* 表单卡片：loading 时显示骨架屏 */}
       <Card loading={loading}>
         <Form form={form} layout="vertical">
-          <Form.Item name="companion_id" label={t('table.companion')} rules={[{ required: true }]}>
-            <Input placeholder="Companion ID" />
+          {/* companion_id：从智能体列表中选择，必填 */}
+          <Form.Item name="companion_id" label={t('table.companion')} rules={[{ required: true, message: '请选择智能体' }]}>
+            <Select
+              showSearch
+              placeholder={companionsLoading ? (t('loading') as string) : '请选择智能体'}
+              loading={companionsLoading}
+              notFoundContent={companionsLoading ? <Spin size="small" /> : undefined}
+              optionFilterProp="label"
+              options={companions.map((c) => ({
+                value: c.profile.id,
+                label: c.profile.name || c.profile.id,
+              }))}
+            />
           </Form.Item>
+          {/* caption：动态文字内容，必填，多行输入 */}
           <Form.Item name="caption" label={t('table.caption')} rules={[{ required: true }]}>
             <Input.TextArea rows={4} />
           </Form.Item>
+          {/* image_url：配图 URL，选填，手动填写外部图片地址 */}
           <Form.Item name="image_url" label={t('table.image')}>
             <Input placeholder="https://..." />
           </Form.Item>

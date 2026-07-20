@@ -1,3 +1,17 @@
+/**
+ * Moments（动态）列表页
+ *
+ * 功能概览：
+ *  1. 以 ProTable 展示所有动态条目，字段包含：
+ *     - ID、所属 Companion（头像 + 名称）、配图缩略图、文字内容（caption）
+ *     - 点赞数、评论数、发布时间
+ *  2. 工具栏操作：新建、批量生成（AI）、清空全部（带二次确认）
+ *  3. 行内操作：编辑、重新生成配图（AI）、删除（带二次确认）
+ *  4. 图片生成中（image_generating=true）时，列表自动每 3s 轮询刷新
+ *     直到后端完成生图，避免缩略图一直显示 loading
+ *  5. 点击缩略图可全屏预览大图 + caption
+ *  6. 批量生成弹窗：可设置每个 Companion 生成几条，以及是否先清空已有数据
+ */
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
@@ -14,13 +28,21 @@ const { Text } = Typography;
 export default function MomentsList() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  /** ProTable 的 actionRef，用于手动触发 reload / 刷新列表 */
   const actionRef = useRef<ActionType | null>(null);
-  const [preview, setPreview] = useState<{ url: string; caption: string } | null>(null);
-  const [batchModalOpen, setBatchModalOpen] = useState(false);
-  const [batchLoading, setBatchLoading] = useState(false);
-  const [batchForm] = Form.useForm();
-  const locale = getAppLanguage();
+  const [preview, setPreview] = useState<{ url: string; caption: string } | null>(null); // 全屏预览的图片数据
+  const [batchModalOpen, setBatchModalOpen] = useState(false);  // 批量生成弹窗开关
+  const [batchLoading, setBatchLoading] = useState(false);       // 批量生成请求 loading
+  const [batchForm] = Form.useForm();                            // 批量生成表单实例
+  const locale = getAppLanguage(); // 当前语言，用于日期格式化
 
+  /**
+   * ProTable 列定义
+   * - companion：展示头像 + 名称，无头像时 fallback 到默认头像
+   * - image_url：生图中显示 loading 动画，有图可点击预览，无图显示 "—"
+   * - created_at：根据当前语言格式化日期
+   * - action：固定在右侧，包含编辑 / 重新生图 / 删除三个按钮
+   */
   const columns = [
     { title: t('table.id'), dataIndex: 'id', key: 'id', width: 60, fixed: 'left' as const },
     {
@@ -121,6 +143,12 @@ export default function MomentsList() {
     },
   ];
 
+  /**
+   * 拉取全部 moments
+   * GET /api/admin/moments?limit=1000
+   * 返回 { moments: MomentItem[], total: number }
+   * ProTable 的 request 回调，返回 { data, success, total }
+   */
   async function fetchData() {
     try {
       const res = await adminFetchJson<{ moments: MomentItem[]; total: number }>('/api/admin/moments?limit=1000');
@@ -131,6 +159,11 @@ export default function MomentsList() {
     }
   }
 
+  /**
+   * 删除单条 moment
+   * DELETE /api/admin/moments/:id
+   * 成功后刷新列表
+   */
   async function handleDelete(id: number) {
     try {
       const res = await adminFetch(`/api/admin/moments/${id}`, { method: 'DELETE' });
@@ -143,6 +176,12 @@ export default function MomentsList() {
     }
   }
 
+  /**
+   * 重新生成某条 moment 的配图（AI 生图）
+   * POST /api/admin/moments/:id/regenerate-image
+   * 后端会异步生成新图片，生成完成后 image_generating 变 false，
+   * 列表通过轮询自动刷新显示新图
+   */
   async function handleRegenerateImage(id: number) {
     try {
       message.loading({ content: t('toast.regenerating'), key: 'img' });
@@ -158,6 +197,10 @@ export default function MomentsList() {
     }
   }
 
+  /**
+   * 清空所有 moments（危险操作，由 Popconfirm 二次确认触发）
+   * DELETE /api/admin/moments（无 id，删除全部）
+   */
   async function handleClearAll() {
     try {
       const res = await adminFetch('/api/admin/moments', { method: 'DELETE' });
@@ -172,6 +215,12 @@ export default function MomentsList() {
     }
   }
 
+  /**
+   * 批量生成 moments
+   * POST /api/admin/moments/batch-generate
+   * @param values.moments_per_companion - 每个 Companion 生成几条（1~10）
+   * @param values.clear_existing        - 是否先清空已有 moments 再生成
+   */
   async function handleBatchGenerate(values: Record<string, unknown>) {
     setBatchLoading(true);
     try {
@@ -202,6 +251,7 @@ export default function MomentsList() {
   return (
     <div style={{ width: '100%', minWidth: 0 }}>
       <h2>{t('page.moments')}</h2>
+      {/* ==================== 主表格 ==================== */}
       <ProTable
         actionRef={actionRef}
         columns={columns}
@@ -214,7 +264,7 @@ export default function MomentsList() {
           const list = (dataSource as MomentItem[]) || [];
           return list.some((m) => m.image_generating) ? 3000 : 0;
         }}
-        pagination={{ pageSize: 10 }}
+        pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '50', '100'] }}
         toolBarRender={() => [
           <Button key="new" type="primary" icon={<PlusOutlined />} onClick={() => navigate('/moments/new')}>
             {t('btn.new')}
@@ -236,6 +286,8 @@ export default function MomentsList() {
           </Popconfirm>,
         ]}
       />
+      {/* ==================== 图片全屏预览遮罩 ==================== */}
+      {/* 点击遮罩背景关闭，内部阻止冒泡防止误关 */}
       {preview && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.6)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setPreview(null)}>
           <div style={{ background: '#fff', padding: 16, borderRadius: 8, maxWidth: 600 }} onClick={(e) => e.stopPropagation()}>
@@ -249,6 +301,8 @@ export default function MomentsList() {
         </div>
       )}
 
+      {/* ==================== 批量生成弹窗 ==================== */}
+      {/* 表单字段：每个 Companion 生成数量（1~10）、是否先清空已有 */}
       <Modal
         title={t('modal.batchGenerateTitle')}
         open={batchModalOpen}

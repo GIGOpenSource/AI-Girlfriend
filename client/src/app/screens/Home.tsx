@@ -17,11 +17,11 @@ import { AvatarImage } from "../components/AvatarImage";
 // 朋友圈图片组件：加载失败时展示 placeholder
 import { MomentImage } from "../components/MomentImage";
 // lucide-react 图标库
-import { Bell, Plus, Heart, MessageCircle, X, Send, ChevronUp, Filter } from "lucide-react";
+import { Bell, Plus, Heart, MessageCircle, X, Send, ChevronUp, Filter, Loader2 } from "lucide-react";
 // 编程式路由跳转
 import { useNavigate } from "react-router";
 // 统一 API 客户端：自动注入 x-token
-import { apiFetch } from "../utils/api";
+import { apiFetch, api } from "../utils/api";
 
 // ====================================================================
 // Companion 类型：顶部横向头像条中的智能体
@@ -53,6 +53,7 @@ interface MomentItem {
   liked: boolean;                      // 当前用户是否已点赞
   comments?: Array<{
     id: number;                        // 评论 ID
+    user_id?: number | null;          // 评论者用户 ID（当前登录用户才用于判断高亮）
     is_user: boolean;                  // 是否用户自己的评论
     companion_id: string | null;       // 评论者智能体 ID（用户评论时为 null）
     companion_name: string;            // 评论者名称
@@ -98,6 +99,22 @@ function getDeviceId(): string {
     localStorage.setItem("device_id", id);
   }
   return id;
+}
+
+function getCurrentUserId(): number | null {
+  const infoStr = localStorage.getItem("user_info");
+  if (!infoStr) return null;
+  try {
+    const info = JSON.parse(infoStr);
+    return info.id ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function isCommentByMe(userId?: number | null): boolean {
+  const currentUserId = getCurrentUserId();
+  return userId != null && currentUserId != null && userId === currentUserId;
 }
 
 // ====================================================================
@@ -183,7 +200,7 @@ export function Home() {
   // ====================================================================
   const loadCompanionStrip = useCallback(async () => {
     // apiFetch 自动注入 x-token，后端可按登录账户分流
-    const companionsRes = await apiFetch("/companions");
+    const companionsRes = await api.get(`/companions?${new URLSearchParams({ filter_type: "chatted" }).toString()}`);
     console.log("=== /companions 接口返回 ===" ,companionsRes);
     const userLang = i18n.language || "zh";
     // 按语言排序，当前语言相同排最前
@@ -466,6 +483,7 @@ export function Home() {
           ...(moments.find((m) => m.id === momentId)?.comments || []),
           {
             id: data.id,
+            user_id: getCurrentUserId(),
             is_user: true,
             companion_id: null,
             companion_name: "我",
@@ -739,7 +757,7 @@ export function Home() {
                         {/* 评论者名字：用户=粉色，智能体=主色 */}
                         <span
                           className={`font-medium mr-1 ${
-                            comment.is_user ? "text-pink-500" : "text-primary"
+                            isCommentByMe(comment.user_id) ? "text-pink-500" : "text-primary"
                           }`}
                         >
                           {comment.companion_name}
@@ -765,6 +783,7 @@ export function Home() {
                     name={`moment_comment_${moment.id}`}
                     type="text"
                     autoComplete="off"
+                    disabled={commentLoading[moment.id]}
                     value={commentInputs[moment.id] || ""}
                     onChange={(e) =>
                       setCommentInputs((prev) => ({
@@ -773,13 +792,13 @@ export function Home() {
                       }))
                     }
                     onKeyDown={(e) => {
-                      if (e.key === "Enter") {
+                      if (e.key === "Enter" && !commentLoading[moment.id]) {
                         e.preventDefault();
                         handleComment(moment.id);
                       }
                     }}
-                    placeholder={t('home.writeComment')}
-                    className="flex-1 bg-muted rounded-full px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-primary"
+                    placeholder={commentLoading[moment.id] ? t('common.loading') : t('home.writeComment')}
+                    className="flex-1 bg-muted rounded-full px-4 py-2 text-sm outline-none focus:ring-1 focus:ring-primary disabled:opacity-50"
                   />
                   <button
                     onClick={() => handleComment(moment.id)}
@@ -788,7 +807,11 @@ export function Home() {
                     data-analytics-button="home-send-comment"
                     data-analytics-name="首页发送评论"
                   >
-                    <Send className="w-5 h-5" />
+                    {commentLoading[moment.id] ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <Send className="w-5 h-5" />
+                    )}
                   </button>
                 </div>
               </div>
