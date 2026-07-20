@@ -77,6 +77,14 @@ export function Profile() {
   const [showAbout, setShowAbout] = useState(false);
   const [showSecurity, setShowSecurity] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
+  useEffect(() => {
+    if (showErrorDialog) {
+      const timer = setTimeout(() => setShowErrorDialog(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showErrorDialog]);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -138,8 +146,17 @@ export function Profile() {
     );
   }
 
-  return (
+   return (
     <div className="min-h-screen bg-background pb-24">
+      {showErrorDialog && (
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 bg-card border border-border rounded-xl px-4 py-3 shadow-lg animate-in slide-in-from-top-2">
+          <div className="w-5 h-5 rounded-full bg-yellow-500 relative flex-shrink-0">
+            <span className="absolute left-1/2 top-[4px] h-[8px] w-[2px] -translate-x-1/2 rounded-full bg-white" />
+            <span className="absolute left-1/2 bottom-[4px] h-[2px] w-[2px] -translate-x-1/2 rounded-full bg-white" />
+            </div>
+          <span className="text-foreground text-sm">{errorMsg}</span>
+        </div>
+      )}
       <div className="bg-card border-b border-border px-4 py-3 sticky top-0 z-10">
         <h1 className="text-xl text-foreground">{t('profile.title')}</h1>
       </div>
@@ -420,10 +437,10 @@ export function Profile() {
                 <label className="text-muted-foreground text-xs mb-1 block">{t('profile.age')}</label>
                 <input
                   type="number"
-                  min={0}
-                  max={150}
+                  min={18}
+                  max={70}
                   value={editAge}
-                  onChange={(e) => setEditAge(e.target.value.replace(/\D/g, "").slice(0, 3))}
+                  onChange={(e) => setEditAge(e.target.value.replace(/\D/g, "").slice(0, 2))}
                   placeholder={t('profile.agePlaceholder')}
                   className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
                 />
@@ -469,20 +486,28 @@ export function Profile() {
             <button
               onClick={async () => {
                 const token = localStorage.getItem("user_token");
-                if (!token || !editNickname.trim()) return;
+                if (!token || !editNickname.trim() || !editAge.trim()) {
+                  if (!editNickname.trim()) {
+                    setErrorMsg(t('profile.enterNickname') || "请输入昵称");
+                    setShowErrorDialog(true);
+                   } else if (!editAge.trim()) {
+                    setErrorMsg(t('profile.requiredAge') || "请输入年龄");
+                    setShowErrorDialog(true);
+                  }
+                  return;
+                }
                 setEditLoading(true);
-                try {
-                  let agePayload: number | null = null;
+                try{
                   const trimmedAge = editAge.trim();
-                  if (trimmedAge !== "") {
-                    const n = parseInt(trimmedAge, 10);
-                    if (!Number.isNaN(n) && n >= 0 && n <= 150) {
-                      agePayload = n;
-                    } else {
-                      setEditLoading(false);
-                      alert(t('profile.updateFailed'));
-                      return;
-                    }
+                  const n = parseInt(trimmedAge, 10);
+                  let agePayload: number | null = null;
+                  if (!Number.isNaN(n) && n >= 18 && n <= 70) {
+                    agePayload = n;
+                  } else {
+                    setEditLoading(false);
+                    setErrorMsg(t('profile.invalidAge') || "年龄必须在18-70岁之间");
+                    setShowErrorDialog(true);
+                    return;
                   }
                   const res = await fetch("/api/auth/me", {
                     method: "PATCH",
@@ -531,15 +556,18 @@ export function Profile() {
                     }
                     setShowEditName(false);
                   } else {
-                    alert(t('profile.updateFailed'));
+                  const errorData = await res.json().catch(() => ({}));
+                  setErrorMsg(errorData.error || errorData.message || errorData.detail || t('profile.updateFailed'));
+                  setShowErrorDialog(true);
                   }
                 } catch {
-                  alert(t('common.networkError'));
+                 setErrorMsg(t('common.networkError'));
+                 setShowErrorDialog(true);
                 } finally {
                   setEditLoading(false);
                 }
               }}
-              disabled={editLoading || !editNickname.trim()}
+              disabled={editLoading || !editNickname.trim()|| !editAge.trim()}
               className="w-full bg-gradient-to-r from-pink-500 to-purple-600 text-white py-3 rounded-xl transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2"
             >
               {editLoading ? (
