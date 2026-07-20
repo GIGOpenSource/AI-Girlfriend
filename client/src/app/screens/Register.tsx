@@ -137,7 +137,7 @@ export function Register() {
             <input
               id="register-password"
               name="new-password"
-              type={showPassword ? "text" : "password"}
+              type={showPassword ? "password" : "text"}
               autoComplete="new-password"
               placeholder={t("register.password")}
               value={password}
@@ -151,9 +151,9 @@ export function Register() {
               aria-label={showPassword ? "隐藏密码" : "显示密码"}
               >
                 {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
+                  <Eye className="w-5 h-5" />
                 ) : (
-                <Eye className="w-5 h-5" />
+                <EyeOff className="w-5 h-5" />
                 )}
                 </button>
                 </div>
@@ -161,7 +161,7 @@ export function Register() {
                   <input
                   id="register-confirm-password"
                   name="confirm-password"
-                  type={showConfirmPassword ? "text" : "password"}
+                  type={showConfirmPassword ? "password" : "text"}
                   autoComplete="new-password"
                   placeholder={t("register.confirmPassword")}
                   value={confirmPassword}
@@ -175,9 +175,9 @@ export function Register() {
                   aria-label={showConfirmPassword ? "隐藏确认密码" : "显示确认密码"}
                   >
                     {showConfirmPassword ? (
-                      <EyeOff className="w-5 h-5" />
+                      <Eye className="w-5 h-5" />
                     ) : (
-                    <Eye className="w-5 h-5" />
+                    <EyeOff className="w-5 h-5" />
                     )}
                     </button>
                     </div>
