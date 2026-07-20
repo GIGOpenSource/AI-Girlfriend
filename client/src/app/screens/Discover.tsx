@@ -95,7 +95,10 @@ export function Discover() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [creating, setCreating] = useState(false);
   const [activeCategory, setActiveCategory] = useState("");
-  const [activeTab, setActiveTab] = useState<"posts" | "companions">("posts");
+  const [activeTab, setActiveTab] = useState<"posts" | "companions">(() => {
+    const saved = sessionStorage.getItem("discover_tab");
+    return saved === "companions" ? "companions" : "posts";
+  });
   const [companions, setCompanions] = useState<CompanionItem[]>([]);
   const [companionFilter, setCompanionFilter] = useState<"all" | "recommended">("all");
   const [companionsLoading, setCompanionsLoading] = useState(false);
@@ -153,6 +156,10 @@ export function Discover() {
       fetchCompanions();
     }
   }, [activeTab, fetchPosts, fetchCompanions]);
+
+  useEffect(() => {
+    sessionStorage.setItem("discover_tab", activeTab);
+  }, [activeTab]);
 
   useEffect(() => {
     setSearchQuery("");
@@ -272,8 +279,8 @@ export function Discover() {
     return () => clearTimeout(timer);
   }, [searchQuery, deviceId]);
 
-  const displayPosts = searchQuery.trim() ? searchResults : posts;
-  const isSearchLoading = searchQuery.trim() && searchLoading;
+  const displayPosts = searchQuery ? searchResults : posts;
+  const isSearchLoading = searchQuery && searchLoading;
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!containerRef.current) return;

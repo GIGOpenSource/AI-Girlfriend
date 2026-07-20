@@ -80,8 +80,8 @@ export function Profile() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  const menuItems: { icon: React.ElementType; label: string; badge?: string; action?: () => void; requireAuth?: boolean }[] = [
-    { icon: Users, label: t('profile.myCompanions'), requireAuth: true, action: () => navigate("/my-companions") },
+  const menuItems: { icon: React.ElementType; label: string; badge?: string; hint?: string; action?: () => void; requireAuth?: boolean }[] = [
+    { icon: Users, label: t('profile.myCompanions'), hint: t('profile.myCompanionsHint'), requireAuth: true, action: () => navigate("/my-companions") },
     { icon: Heart, label: t('profile.myMoments'), requireAuth: true, action: () => navigate("/my-posts") },
     { icon: MessageCircle, label: t('profile.intimacyRecord'), requireAuth: true, action: () => navigate("/intimacy-record") },
     { icon: Bell, label: t('profile.notificationSettings'), requireAuth: true, action: () => navigate("/notification-settings") },
@@ -118,7 +118,11 @@ export function Profile() {
             occupation: userData.occupation || "",
           });
         }
-        if (statsData) setStats(statsData);
+        if (statsData) setStats({
+          companion_count: statsData.intimate_companion_count ?? statsData.companion_count ?? 0,
+          total_turns: statsData.total_turns ?? 0,
+          days_together: statsData.max_days_together ?? statsData.days_together ?? 0,
+        });
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -160,7 +164,7 @@ export function Profile() {
               try {
                 const fd = new FormData();
                 fd.append("file", file);
-                const up = await fetch("/api/upload/image", { method: "POST", body: fd });
+                const up = await fetch("/api/upload/image", { method: "POST", headers: { "x-token": token }, body: fd });
                 const data = await up.json();
                 const url = data.url as string | undefined;
                 if (!url) {
@@ -330,7 +334,12 @@ export function Profile() {
                     <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center">
                       <Icon className="w-5 h-5 text-foreground" />
                     </div>
-                    <span className="text-foreground">{item.label}</span>
+                    <div className="flex flex-col items-start">
+                      <span className="text-foreground">{item.label}</span>
+                      {item.hint && (
+                        <span className="text-muted-foreground text-xs">{item.hint}</span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {item.badge && (

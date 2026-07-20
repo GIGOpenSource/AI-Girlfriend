@@ -19,6 +19,7 @@
   },
   "nav": {
     "home": "Início",
+    "messages": "Mensagens",
     "chat": "Conversa",
     "discover": "Descobrir",
     "profile": "Perfil"
@@ -177,6 +178,7 @@
     "pleaseLogin": "Por favor, faça login",
     "authorId": "ID do Autor",
     "myCompanions": "Meus Personagens",
+    "myCompanionsHint": "Intimidade > 5 para aparecer",
     "myMoments": "Meus Momentos",
     "intimacyRecord": "Registro de Intimidade",
     "notificationSettings": "Notificações",
@@ -199,6 +201,7 @@
   },
   "myCompanions": {
     "total": "Total",
+    "totalAffection": "Afeição Total",
     "intimate": "Qtd. Íntimos",
     "soulmate": "Alma gêmea",
     "close": "Próximo",

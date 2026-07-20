@@ -339,7 +339,7 @@ export function CreateCompanion() {
           setDynamicCities((prev) => ({ ...prev, [lang]: data.cities }));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [i18n.language]);
 
   // 克隆模式：从 localStorage 读取预填充数据
@@ -468,7 +468,7 @@ export function CreateCompanion() {
     const personalityStr = selectedPersonalities.join("、");
 
     if (!name.trim()) newErrors.name = "姓名不能为空，请填写内容";
-    if (!age) newErrors.age = "年龄不能为空，请填写内容";
+    if (!age && age !== 0) newErrors.age = "年龄不能为空，请填写内容";
     if (!gender) newErrors.gender = "性别不能为空，请填写内容";
     if (!city.trim()) newErrors.city = "城市不能为空，请填写内容";
     if (!personalityStr.trim()) newErrors.personality = "性格不能为空，请填写内容";
@@ -481,18 +481,20 @@ export function CreateCompanion() {
     else if (speakingStyle.trim().length < 5) newErrors.speakingStyle = "说话风格内容至少填写5个字符，请补充完整描述";
 
     setErrors(newErrors);
-    
+
     const errorList = Object.values(newErrors);
     if (errorList.length > 0) {
+      console.warn("[CreateCompanion] validateForm 失败字段:", newErrors);
       alert(errorList.join("\n"));
     }
-    
+
     return errorList.length === 0;
   };
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log("[CreateCompanion] handleCreate 被调用, 开始 validateForm");
     if (!validateForm()) return;
 
     const payload = {
@@ -506,16 +508,27 @@ export function CreateCompanion() {
       avatar_url: "__GENERATING__",
       background,
       speech_style: speakingStyle,
+      hobbies: hobbies || "",
+      values: values || "",
+      fears: fears || "",
+      love_view: loveView || "",
+      daily_routine: dailyRoutine || "",
+      favorite_things: favoriteThings || "",
+      life_story: lifeStory || "",
+      cultural_values: culturalValues || "",
+      gender_perspective: genderPerspective || "",
     };
 
     try {
-      await api.post("/companions", payload);
+      console.log("[CreateCompanion] 发送创建请求 payload:", payload);
+      const result = await api.post("/companions", payload);
+      console.log("[CreateCompanion] 创建成功, 返回结果:", result);
       navigate("/messages");
       setTimeout(() => {
         window.location.reload();
       }, 500);
     } catch (err) {
-      console.error("创建智能体失败:", err);
+      console.error("[CreateCompanion] 创建智能体失败:", err);
     }
   };
 
@@ -557,9 +570,8 @@ export function CreateCompanion() {
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder={t('createCompanion.namePlaceholder')}
-              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors ${
-                errors.name ? 'border-red-500' : 'border-border'
-              }`}
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors ${errors.name ? 'border-red-500' : 'border-border'
+                }`}
             />
             {errors.name && (
               <p className="text-red-500 text-xs mt-1">{errors.name}</p>
@@ -597,22 +609,20 @@ export function CreateCompanion() {
               <button
                 type="button"
                 onClick={() => setGender("male")}
-                className={`flex-1 py-3 rounded-xl transition-all ${
-                  gender === "male"
+                className={`flex-1 py-3 rounded-xl transition-all ${gender === "male"
                     ? "bg-gradient-to-r from-blue-500 to-cyan-600 text-white"
                     : "bg-secondary text-secondary-foreground border border-border"
-                }`}
+                  }`}
               >
                 {t('register.male')}
               </button>
               <button
                 type="button"
                 onClick={() => setGender("female")}
-                className={`flex-1 py-3 rounded-xl transition-all ${
-                  gender === "female"
+                className={`flex-1 py-3 rounded-xl transition-all ${gender === "female"
                     ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
                     : "bg-secondary text-secondary-foreground border border-border"
-                }`}
+                  }`}
               >
                 {t('register.female')}
               </button>
@@ -630,9 +640,8 @@ export function CreateCompanion() {
             <select
               value={sexualOrientation}
               onChange={(e) => setSexualOrientation(e.target.value)}
-              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none transition-colors ${
-                errors.sexualOrientation ? 'border-red-500' : 'border-border'
-              }`}
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none transition-colors ${errors.sexualOrientation ? 'border-red-500' : 'border-border'
+                }`}
             >
               <option value="heterosexual">{t('register.heterosexual')}</option>
               <option value="homosexual">{t('register.homosexual')}</option>
@@ -654,9 +663,8 @@ export function CreateCompanion() {
             <select
               value={city}
               onChange={(e) => setCity(e.target.value)}
-              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors ${
-                errors.city ? 'border-red-500' : 'border-border'
-              }`}
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-colors ${errors.city ? 'border-red-500' : 'border-border'
+                }`}
             >
               <option value="">{t('createCompanion.cityPlaceholder')}</option>
               {(dynamicCities[i18n.language || "zh"] || dynamicCities["zh"] || []).map((c) => (
@@ -676,9 +684,8 @@ export function CreateCompanion() {
             <select
               value={mbti}
               onChange={(e) => setMbti(e.target.value)}
-              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none transition-colors ${
-                errors.mbti ? 'border-red-500' : 'border-border'
-              }`}
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 appearance-none transition-colors ${errors.mbti ? 'border-red-500' : 'border-border'
+                }`}
             >
               <option value="">{t('createCompanion.mbtiPlaceholder')}</option>
               <option value="INTJ">INTJ - 建筑师</option>
@@ -714,11 +721,10 @@ export function CreateCompanion() {
                   key={personality}
                   type="button"
                   onClick={() => togglePersonality(personality)}
-                  className={`px-4 py-2 rounded-full text-sm transition-all ${
-                    selectedPersonalities.includes(personality)
+                  className={`px-4 py-2 rounded-full text-sm transition-all ${selectedPersonalities.includes(personality)
                       ? "bg-gradient-to-r from-pink-500 to-purple-600 text-white"
                       : "bg-secondary text-secondary-foreground border border-border"
-                  }`}
+                    }`}
                 >
                   {personality}
                   {selectedPersonalities.includes(personality) && (
@@ -741,9 +747,8 @@ export function CreateCompanion() {
               value={background}
               onChange={(e) => setBackground(e.target.value)}
               placeholder={t('createCompanion.backgroundPlaceholder')}
-              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-24 resize-none transition-colors ${
-                errors.background ? 'border-red-500' : 'border-border'
-              }`}
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-24 resize-none transition-colors ${errors.background ? 'border-red-500' : 'border-border'
+                }`}
             />
             {errors.background && (
               <p className="text-red-500 text-xs mt-1">{errors.background}</p>
@@ -759,9 +764,8 @@ export function CreateCompanion() {
               value={speakingStyle}
               onChange={(e) => setSpeakingStyle(e.target.value)}
               placeholder={t('createCompanion.speechStylePlaceholder')}
-              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-24 resize-none transition-colors ${
-                errors.speakingStyle ? 'border-red-500' : 'border-border'
-              }`}
+              className={`w-full bg-input-background border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 min-h-24 resize-none transition-colors ${errors.speakingStyle ? 'border-red-500' : 'border-border'
+                }`}
             />
             {errors.speakingStyle && (
               <p className="text-red-500 text-xs mt-1">{errors.speakingStyle}</p>

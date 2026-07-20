@@ -407,6 +407,9 @@ export function Chat() {
     }
   }, [companionId, getCompanionMessages, navigate, i18n.language]);
 
+  const loadMessagesRef = useRef(loadMessages);
+  loadMessagesRef.current = loadMessages;
+
   useEffect(() => {
     if (!companionId) return;
     initialScrollDone.current = false;
@@ -427,7 +430,7 @@ export function Chat() {
         if (!r.ok) throw new Error("加载失败");
         return r.json();
       }),
-      loadMessages(0, true),
+      loadMessagesRef.current(0, true),
     ])
       .then(([companionData]) => {
         if (!companionData) return;
@@ -443,7 +446,8 @@ export function Chat() {
         console.error("加载失败:", err);
         setLoading(false);
       });
-  }, [companionId, loadMessages, t, navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companionId, t, navigate]);
 
   useEffect(() => {
     if (!companionId) return;

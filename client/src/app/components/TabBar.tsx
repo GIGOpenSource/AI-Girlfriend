@@ -2,8 +2,10 @@ import { useNavigate, useLocation } from "react-router";
 import { Home, MessageCircle, Compass, User, ArrowUp } from "lucide-react";
 import { useChat } from "../context/ChatContext";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 
 export function TabBar() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { unreadCounts } = useChat();
@@ -56,10 +58,10 @@ export function TabBar() {
   };
 
   const tabs = [
-    { path: "/home", icon: Home, label: "首页" },
-    { path: "/messages", icon: MessageCircle, label: "消息", showBadge: true },
-    { path: "/discover", icon: Compass, label: "发现" },
-    { path: "/profile", icon: User, label: "我的" },
+    { path: "/home", icon: Home, label: t('nav.home') },
+    { path: "/messages", icon: MessageCircle, label: t('nav.messages'), showBadge: true },
+    { path: "/discover", icon: Compass, label: t('nav.discover') },
+    { path: "/profile", icon: User, label: t('nav.profile') },
   ];
 
   return (

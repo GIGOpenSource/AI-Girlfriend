@@ -69,7 +69,7 @@ export function MyCompanions() {
   }, []);
 
   useEffect(() => {
-    fetch("/companions", { headers: getAuthHeaders() })
+    fetch(`/companions?${new URLSearchParams({ filter_type: "affectionate" }).toString()}`, { headers: getAuthHeaders() })
       .then((r) => {
         if (r.status === 401) {
           localStorage.removeItem("user_token");
@@ -151,9 +151,9 @@ export function MyCompanions() {
           </div>
           <div className="bg-card border border-border rounded-2xl p-4 text-center">
             <div className="text-2xl text-foreground mb-1">
-              {visibleCompanions.filter((c) => c.affection >= 50).length}
+              {visibleCompanions.reduce((sum, c) => sum + c.affection, 0).toFixed(2)}
             </div>
-            <div className="text-muted-foreground text-xs">{t('myCompanions.intimate')}</div>
+            <div className="text-muted-foreground text-xs">{t('myCompanions.totalAffection')}</div>
           </div>
           <div className="bg-card border border-border rounded-2xl p-4 text-center">
             <div className="text-2xl text-foreground mb-1">

@@ -19,6 +19,7 @@
   },
   "nav": {
     "home": "홈",
+    "messages": "메시지",
     "chat": "채팅",
     "discover": "발견",
     "profile": "마이페이지"
@@ -177,6 +178,7 @@
     "pleaseLogin": "로그인해주세요",
     "authorId": "작가ID",
     "myCompanions": "나의 연인",
+    "myCompanionsHint": "친밀도 > 5 시 표시",
     "myMoments": "나의 모멘트",
     "intimacyRecord": "친밀도 기록",
     "notificationSettings": "알림 설정",
@@ -199,6 +201,7 @@
   },
   "myCompanions": {
     "total": "총수",
+    "totalAffection": "총 친밀도",
     "intimate": "친밀 수",
     "soulmate": "소울메이트",
     "close": "친근",

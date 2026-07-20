@@ -19,6 +19,7 @@
   },
   "nav": {
     "home": "Beranda",
+    "messages": "Pesan",
     "chat": "Obrolan",
     "discover": "Jelajahi",
     "profile": "Profil"
@@ -177,6 +178,7 @@
     "pleaseLogin": "Silakan masuk",
     "authorId": "ID Penulis",
     "myCompanions": "Karakter Saya",
+    "myCompanionsHint": "Kedekatan > 5 untuk muncul",
     "myMoments": "Momen Saya",
     "intimacyRecord": "Riwayat Kedekatan",
     "notificationSettings": "Pengaturan Notifikasi",
@@ -199,6 +201,7 @@
   },
   "myCompanions": {
     "total": "Total",
+    "totalAffection": "Total Afeksi",
     "intimate": "Jumlah Intim",
     "soulmate": "Jiwa kembar",
     "close": "Dekat",

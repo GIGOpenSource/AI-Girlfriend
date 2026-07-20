@@ -7,6 +7,7 @@ import { translatePersonalityTag } from "../utils/personalityTags";
 import { getAuthHeaders } from "../utils/authHeaders";
 import apiFetch from "../utils/api";
 import { formatAffectionDisplay } from "../utils/formatAffection";
+import { useChat } from "../context/ChatContext";
 
 interface CompanionData {
   profile: {
@@ -60,6 +61,7 @@ export function CompanionProfile() {
   const [activeTab, setActiveTab] = useState<"about" | "moments">("about");
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const { clearMessages } = useChat();
 
   useEffect(() => {
     if (!showMenu) return;
@@ -212,7 +214,7 @@ export function CompanionProfile() {
                     try {
                       const res = await fetch(
                         `/companions/${companionId}/clear-messages`,
-                        { method: "POST", headers: getAuthHeaders() }
+                        { method: "POST", headers: getAuthHeaders(), cache: "no-store" }
                       );
                       if (res.status === 401) {
                         localStorage.removeItem("user_token");
@@ -221,6 +223,7 @@ export function CompanionProfile() {
                         return;
                       }
                       if (res.ok) {
+                        clearMessages(companionId);
                         setCompanion((prev) =>
                           prev
                             ? { ...prev, state: { ...prev.state, affection: 0 } }
@@ -228,9 +231,11 @@ export function CompanionProfile() {
                         );
                         alert(t('chat.clearSuccess'));
                       } else {
+                        console.error("[CompanionProfile] 清空消息失败, status:", res.status);
                         alert(t('chat.clearFailed'));
                       }
-                    } catch {
+                    } catch (err) {
+                      console.error("[CompanionProfile] 清空聊天记录失败:", err);
                       alert(t('chat.clearFailed'));
                     }
                   }}
