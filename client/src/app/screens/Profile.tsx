@@ -24,6 +24,16 @@ import {
 } from "lucide-react";
 import { AvatarImage } from "../components/AvatarImage";
 import { normalizeMediaUrl } from "../utils/media";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../components/ui/alert-dialog";
 
 interface UserInfo {
   id: number;
@@ -66,6 +76,7 @@ export function Profile() {
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showSecurity, setShowSecurity] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -335,7 +346,7 @@ export function Profile() {
 
           {user ? (
             <button
-              onClick={handleLogout}
+              onClick={() => setShowLogoutConfirm(true)}
               data-analytics-button="profile-logout"
               data-analytics-name="个人中心退出登录"
               className="w-full bg-card border border-destructive/20 rounded-xl p-4 flex items-center justify-between hover:bg-destructive/5 transition-colors"
@@ -690,6 +701,27 @@ export function Profile() {
           </div>
         </div>
       )}
+
+      {/* 退出登录二次确认 */}
+      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('profile.logout')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('profile.logoutConfirm')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLogout}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t('common.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <TabBar />
     </div>
