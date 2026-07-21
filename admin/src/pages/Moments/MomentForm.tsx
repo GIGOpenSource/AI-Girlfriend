@@ -17,8 +17,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Form, Input, Button, Space, Card, Select, Spin } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
+import { Form, Input, Button, Space, Card, Select, Spin, Upload } from 'antd';
+import { ArrowLeftOutlined, UploadOutlined } from '@ant-design/icons';
 import { adminFetchJson, adminFetch, showSuccess, showError } from '../../api/request';
 import type { CompanionItem } from '../../types';
 
@@ -45,6 +45,7 @@ export default function MomentForm() {
   const [loading, setLoading] = useState(false);   // 数据加载中（仅编辑模式）
   const [saving, setSaving] = useState(false);     // 保存请求中
   const [companions, setCompanions] = useState<CompanionItem[]>([]); // 智能体列表
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null); // 图片预览 URL
   const [companionsLoading, setCompanionsLoading] = useState(false);  // 智能体列表加载中
 
   /** 加载智能体列表，供新建时选择 */
@@ -77,6 +78,7 @@ export default function MomentForm() {
           caption: item.caption,
           image_url: item.image_url || '',
         });
+        setPreviewImageUrl(item.image_url || null);
       }
     } catch {
       showError(t('toast.loadFailed') as string);
@@ -162,9 +164,50 @@ export default function MomentForm() {
           <Form.Item name="caption" label={t('table.caption')} rules={[{ required: true }]}>
             <Input.TextArea rows={4} />
           </Form.Item>
-          {/* image_url：配图 URL，选填，手动填写外部图片地址 */}
           <Form.Item name="image_url" label={t('table.image')}>
-            <Input placeholder="https://..." />
+            <Upload
+              listType="picture-card"
+              accept="image/*"
+              maxCount={1}
+              fileList={previewImageUrl ? [{ uid: 'image', name: 'image', status: 'done', url: previewImageUrl }] : []}
+              customRequest={({ file, onSuccess, onError }) => {
+                const formData = new FormData();
+                formData.append('file', file);
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '/api/upload/image');
+                xhr.setRequestHeader('Authorization', `Bearer ${localStorage.getItem('admin_token') || ''}`);
+                xhr.onload = () => {
+                  if (xhr.status === 200) {
+                    try {
+                      const data = JSON.parse(xhr.responseText);
+                      const imagePath = data.url || data.path || '';
+                      form.setFieldsValue({ image_url: imagePath });
+                      setPreviewImageUrl(imagePath);
+                      onSuccess(data, file);
+                    } catch {
+                      onError(new Error('Invalid response'));
+                    }
+                  } else {
+                    onError(new Error(`HTTP ${xhr.status}`));
+                  }
+                };
+                xhr.onerror = () => {
+                  onError(new Error('Network error'));
+                };
+                xhr.send(formData);
+              }}
+              onRemove={() => {
+                form.setFieldsValue({ image_url: '' });
+                setPreviewImageUrl(null);
+              }}
+            >
+              {!previewImageUrl && (
+                <div>
+                  <UploadOutlined />
+                  <div style={{ marginTop: 8 }}>{t('btn.upload') || '上传图片'}</div>
+                </div>
+              )}
+            </Upload>
           </Form.Item>
           <Space>
             <Button type="primary" onClick={handleSave} loading={saving}>
