@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router";
 import { ArrowLeft } from "lucide-react";
 
-const PRIVACY_URL = "https://www.markwallpapers.com/privacy/pages/privacy/privacy";
+const PRIVACY_URL = "https://www.trandsai.com/agreement/Trands%20-%20Ai%20Privacy%20Policy.html";
 
 export function PrivacyPolicy() {
   const navigate = useNavigate();

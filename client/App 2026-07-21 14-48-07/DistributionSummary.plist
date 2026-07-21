@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>App.ipa</key>
+	<array>
+		<dict>
+			<key>architectures</key>
+			<array>
+				<string>arm64</string>
+			</array>
+			<key>buildNumber</key>
+			<string>1</string>
+			<key>certificate</key>
+			<dict>
+				<key>SHA1</key>
+				<string>5A953C99B4FC1DD4156AF8EFD277B9A36C9A50A9</string>
+				<key>dateExpires</key>
+				<string>2027/7/20</string>
+				<key>type</key>
+				<string>Cloud Managed Apple Distribution</string>
+			</dict>
+			<key>embeddedBinaries</key>
+			<array>
+				<dict>
+					<key>architectures</key>
+					<array>
+						<string>arm64</string>
+					</array>
+					<key>buildNumber</key>
+					<string>1</string>
+					<key>certificate</key>
+					<dict>
+						<key>SHA1</key>
+						<string>5A953C99B4FC1DD4156AF8EFD277B9A36C9A50A9</string>
+						<key>dateExpires</key>
+						<string>2027/7/20</string>
+						<key>type</key>
+						<string>Cloud Managed Apple Distribution</string>
+					</dict>
+					<key>name</key>
+					<string>Capacitor.framework</string>
+					<key>team</key>
+					<dict>
+						<key>id</key>
+						<string>2B8F5HG6NF</string>
+						<key>name</key>
+						<string>THE GETZEN GROUP, INC.</string>
+					</dict>
+					<key>versionNumber</key>
+					<string>1.0</string>
+				</dict>
+				<dict>
+					<key>architectures</key>
+					<array>
+						<string>arm64</string>
+					</array>
+					<key>buildNumber</key>
+					<string>1</string>
+					<key>certificate</key>
+					<dict>
+						<key>SHA1</key>
+						<string>5A953C99B4FC1DD4156AF8EFD277B9A36C9A50A9</string>
+						<key>dateExpires</key>
+						<string>2027/7/20</string>
+						<key>type</key>
+						<string>Cloud Managed Apple Distribution</string>
+					</dict>
+					<key>name</key>
+					<string>Cordova.framework</string>
+					<key>team</key>
+					<dict>
+						<key>id</key>
+						<string>2B8F5HG6NF</string>
+						<key>name</key>
+						<string>THE GETZEN GROUP, INC.</string>
+					</dict>
+					<key>versionNumber</key>
+					<string>1.0</string>
+				</dict>
+			</array>
+			<key>entitlements</key>
+			<dict>
+				<key>application-identifier</key>
+				<string>2B8F5HG6NF.com.gig.trandsai</string>
+				<key>com.apple.developer.team-identifier</key>
+				<string>2B8F5HG6NF</string>
+				<key>get-task-allow</key>
+				<false/>
+			</dict>
+			<key>name</key>
+			<string>App.app</string>
+			<key>profile</key>
+			<dict>
+				<key>UUID</key>
+				<string>eb9d5d04-d5d0-4550-bfd6-d3eb7ded3050</string>
+				<key>dateExpires</key>
+				<string>2027/7/20</string>
+				<key>name</key>
+				<string>iOS Team Ad Hoc Provisioning Profile: com.gig.trandsai</string>
+			</dict>
+			<key>team</key>
+			<dict>
+				<key>id</key>
+				<string>2B8F5HG6NF</string>
+				<key>name</key>
+				<string>THE GETZEN GROUP, INC.</string>
+			</dict>
+			<key>versionNumber</key>
+			<string>1.0</string>
+		</dict>
+	</array>
+</dict>
+</plist>

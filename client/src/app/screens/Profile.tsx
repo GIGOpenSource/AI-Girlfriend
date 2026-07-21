@@ -71,6 +71,7 @@ export function Profile() {
   const [showSecurity, setShowSecurity] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [showErrorDialog, setShowErrorDialog] = useState(false);
+  const savedScrollYRef = useRef(0);
   const [errorMsg, setErrorMsg] = useState("");
   useEffect(() => {
     if (showErrorDialog) {
@@ -78,6 +79,15 @@ export function Profile() {
       return () => clearTimeout(timer);
     }
   }, [showErrorDialog]);
+
+  // 关闭退出确认弹窗后恢复滚动位置，避免 Radix focus restore 导致页面跳动
+  useEffect(() => {
+    if (!showLogoutConfirm && savedScrollYRef.current > 0) {
+      requestAnimationFrame(() => {
+        window.scrollTo(0, savedScrollYRef.current);
+      });
+    }
+  }, [showLogoutConfirm]);
 
   // 弹窗打开时锁定背景滚动
   const isAnyModalOpen =
@@ -390,7 +400,10 @@ export function Profile() {
 
           {user ? (
             <button
-              onClick={() => setShowLogoutConfirm(true)}
+              onClick={() => {
+                savedScrollYRef.current = window.scrollY;
+                setShowLogoutConfirm(true);
+              }}
               data-analytics-button="profile-logout"
               data-analytics-name="个人中心退出登录"
               className="w-full bg-card border border-destructive/20 rounded-xl p-4 flex items-center justify-between hover:bg-destructive/5 transition-colors"
