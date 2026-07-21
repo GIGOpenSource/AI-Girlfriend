@@ -31,6 +31,9 @@ export default function Analytics() {
   const [retention, setRetention] = useState<RetentionPayload | null>(null);
   const [dates, setDates] = useState<[string, string] | null>(null);
   const [language, setLanguage] = useState<string | null>(null);
+  const [dauSorter, setDauSorter] = useState<{ field: keyof DauSeriesItem; order: 'ascend' | 'descend' } | null>({ field: 'dau', order: 'descend' });
+  const [pageViewSorter, setPageViewSorter] = useState<{ field: keyof AnalyticsPageViewItem; order: 'ascend' | 'descend' } | null>({ field: 'pv_count', order: 'descend' });
+  const [buttonClickSorter, setButtonClickSorter] = useState<{ field: keyof AnalyticsButtonClickItem; order: 'ascend' | 'descend' } | null>({ field: 'click_count', order: 'descend' });
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -56,8 +59,16 @@ export default function Analytics() {
         retention?: RetentionPayload;
       }>(`/api/admin/analytics?${params.toString()}`);
       if (res) {
-        setPageViews(res.page_views || []);
-        setButtonClicks(res.button_clicks || []);
+        setPageViews((res.page_views || []).map((item) => ({
+          ...item,
+          pv_count: Number(item.pv_count),
+          uv_count: Number(item.uv_count),
+        })));
+        setButtonClicks((res.button_clicks || []).map((item) => ({
+          ...item,
+          click_count: Number(item.click_count),
+          uv_count: Number(item.uv_count),
+        })));
         setDauSeries(res.dau_series || []);
         setRetention(res.retention || null);
         setSummary({
@@ -80,6 +91,20 @@ export default function Analytics() {
     }, 0);
     return () => window.clearTimeout(timer);
   }, [loadData]);
+
+  const getSortedData = <T extends object>(
+    data: T[],
+    sorter: { field: keyof T; order: 'ascend' | 'descend' } | null
+  ): T[] => {
+    if (!sorter || !data.length) return [...data];
+    return [...data].sort((a, b) => {
+      const valA = a[sorter.field];
+      const valB = b[sorter.field];
+      const numA = typeof valA === 'number' ? valA : Number(valA) || 0;
+      const numB = typeof valB === 'number' ? valB : Number(valB) || 0;
+      return sorter.order === 'ascend' ? numA - numB : numB - numA;
+    });
+  };
 
   const handleExport = async (type: 'all' | 'page_views' | 'button_clicks' | 'dau' | 'retention') => {
     try {
@@ -200,17 +225,33 @@ export default function Analytics() {
       <h3 style={{ marginBottom: 16 }}>{t('analytics.dauTitle')}</h3>
       <ProTable<DauSeriesItem>
         rowKey="date"
-        dataSource={dauSeries}
+        dataSource={getSortedData(dauSeries, dauSorter)}
         loading={loading}
         search={false}
         pagination={{ pageSize: 15, showSizeChanger: true }}
+        onChange={(_, __, sorter) => {
+          let field: keyof DauSeriesItem | undefined;
+          let order: 'ascend' | 'descend' | undefined;
+          if (Array.isArray(sorter) && sorter.length > 0) {
+            field = sorter[0].field as keyof DauSeriesItem;
+            order = sorter[0].order;
+          } else if (sorter && !Array.isArray(sorter)) {
+            field = sorter.field as keyof DauSeriesItem;
+            order = sorter.order;
+          }
+          if (!field) return;
+          if (order) {
+            setDauSorter({ field, order });
+          }
+        }}
         columns={[
           { title: t('analytics.dauDate'), dataIndex: 'date', key: 'date' },
           {
             title: t('analytics.dauCount'),
             dataIndex: 'dau',
             key: 'dau',
-            sorter: (a, b) => a.dau - b.dau,
+            sorter: true,
+            sortOrder: dauSorter?.field === 'dau' ? dauSorter.order : undefined,
           },
         ]}
       />
@@ -263,16 +304,43 @@ export default function Analytics() {
       <h3 style={{ marginTop: 32, marginBottom: 16 }}>{t('analytics.pageViews')}</h3>
       <ProTable<AnalyticsPageViewItem>
         rowKey="page_path"
-        dataSource={pageViews}
+        dataSource={getSortedData(pageViews, pageViewSorter)}
         loading={loading}
         search={false}
         pagination={{ pageSize: 10 }}
+        onChange={(_, __, sorter) => {
+          let field: keyof AnalyticsPageViewItem | undefined;
+          let order: 'ascend' | 'descend' | undefined;
+          if (Array.isArray(sorter) && sorter.length > 0) {
+            field = sorter[0].field as keyof AnalyticsPageViewItem;
+            order = sorter[0].order;
+          } else if (sorter && !Array.isArray(sorter)) {
+            field = sorter.field as keyof AnalyticsPageViewItem;
+            order = sorter.order;
+          }
+          if (!field) return;
+          if (order) {
+            setPageViewSorter({ field, order });
+          }
+        }}
         columns={[
           { title: t('table.pagePath'), dataIndex: 'page_path', key: 'page_path' },
           { title: t('table.pageName'), dataIndex: 'page_name', key: 'page_name' },
           { title: t('table.language'), dataIndex: 'language', key: 'language' },
-          { title: t('table.pvCount'), dataIndex: 'pv_count', key: 'pv_count', sorter: (a, b) => a.pv_count - b.pv_count },
-          { title: t('table.uvCount'), dataIndex: 'uv_count', key: 'uv_count', sorter: (a, b) => a.uv_count - b.uv_count },
+          {
+            title: t('table.pvCount'),
+            dataIndex: 'pv_count',
+            key: 'pv_count',
+            sorter: true,
+            sortOrder: pageViewSorter?.field === 'pv_count' ? pageViewSorter.order : undefined,
+          },
+          {
+            title: t('table.uvCount'),
+            dataIndex: 'uv_count',
+            key: 'uv_count',
+            sorter: true,
+            sortOrder: pageViewSorter?.field === 'uv_count' ? pageViewSorter.order : undefined,
+          },
         ]}
         toolBarRender={() => [
           <Button key="export-pv" icon={<DownloadOutlined />} onClick={() => handleExport('page_views')}>
@@ -284,17 +352,44 @@ export default function Analytics() {
       <h3 style={{ marginTop: 32, marginBottom: 16 }}>{t('analytics.buttonClicks')}</h3>
       <ProTable<AnalyticsButtonClickItem>
         rowKey="button_id"
-        dataSource={buttonClicks}
+        dataSource={getSortedData(buttonClicks, buttonClickSorter)}
         loading={loading}
         search={false}
         pagination={{ pageSize: 10 }}
+        onChange={(_, __, sorter) => {
+          let field: keyof AnalyticsButtonClickItem | undefined;
+          let order: 'ascend' | 'descend' | undefined;
+          if (Array.isArray(sorter) && sorter.length > 0) {
+            field = sorter[0].field as keyof AnalyticsButtonClickItem;
+            order = sorter[0].order;
+          } else if (sorter && !Array.isArray(sorter)) {
+            field = sorter.field as keyof AnalyticsButtonClickItem;
+            order = sorter.order;
+          }
+          if (!field) return;
+          if (order) {
+            setButtonClickSorter({ field, order });
+          }
+        }}
         columns={[
           { title: t('table.buttonId'), dataIndex: 'button_id', key: 'button_id' },
           { title: t('table.buttonName'), dataIndex: 'button_name', key: 'button_name' },
           { title: t('table.page'), dataIndex: 'page_path', key: 'page_path' },
           { title: t('table.language'), dataIndex: 'language', key: 'language' },
-          { title: t('table.clickCount'), dataIndex: 'click_count', key: 'click_count', sorter: (a, b) => a.click_count - b.click_count },
-          { title: t('table.uvCount'), dataIndex: 'uv_count', key: 'uv_count', sorter: (a, b) => a.uv_count - b.uv_count },
+          {
+            title: t('table.clickCount'),
+            dataIndex: 'click_count',
+            key: 'click_count',
+            sorter: true,
+            sortOrder: buttonClickSorter?.field === 'click_count' ? buttonClickSorter.order : undefined,
+          },
+          {
+            title: t('table.uvCount'),
+            dataIndex: 'uv_count',
+            key: 'uv_count',
+            sorter: true,
+            sortOrder: buttonClickSorter?.field === 'uv_count' ? buttonClickSorter.order : undefined,
+          },
         ]}
         toolBarRender={() => [
           <Button key="export-bc" icon={<DownloadOutlined />} onClick={() => handleExport('button_clicks')}>
