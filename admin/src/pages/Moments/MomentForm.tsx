@@ -129,6 +129,7 @@ export default function MomentForm() {
     } catch {
       showError(t('settings.saveFailed') as string);
     } finally {
+      console.log(111)
       setSaving(false);
     }
   }
