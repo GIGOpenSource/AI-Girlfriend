@@ -226,8 +226,13 @@ export function Register() {
           </button>
 
           <div className="text-center text-muted-foreground text-xs pt-4">
-            {t('register.agree')} <button className="text-primary">{t('register.terms')}</button>
-            {t('register.and')}<button className="text-primary">{t('register.privacy')}</button>
+            {t('register.agree')}
+            <button
+            className="text-primary"
+            onClick={() => navigate("/privacy-policy")}
+            >
+              {t('register.privacy')}
+              </button>
           </div>
         </form>
 
