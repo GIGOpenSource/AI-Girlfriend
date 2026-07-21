@@ -89,7 +89,7 @@
     "filterOrientation": "Orientation",
     "filterAll": "All",
     "resetFilter": "Reset",
-    "applyFilter": "Apply"
+    "applyFilter": "Confirm"
   },
   "chat": {
     "placeholder": "Type a message...",

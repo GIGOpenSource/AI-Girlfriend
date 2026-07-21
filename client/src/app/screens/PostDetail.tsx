@@ -295,7 +295,7 @@ export function PostDetail() {
                       <p className="text-foreground text-xs font-medium mb-0.5">
                         {comment.user_name}
                       </p>
-                      <p className="text-foreground text-sm">{comment.content}</p>
+                      <p className="text-foreground text-sm break-words">{comment.content}</p>
                     </div>
                     <p className="text-muted-foreground text-xs mt-1 ml-1">
                       {formatRelativeTime(comment.created_at, t)}

@@ -283,7 +283,7 @@ export function MomentDetail() {
                       >
                         {comment.companion_name}
                       </p>
-                      <p className="text-foreground text-sm">
+                      <p className="text-foreground text-sm break-words">
                         {comment.reply_to_name && (
                           <span className="text-primary font-medium">
                             @{comment.reply_to_name}{" "}

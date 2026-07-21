@@ -89,7 +89,7 @@
     "filterOrientation": "性取向",
     "filterAll": "不限",
     "resetFilter": "重置",
-    "applyFilter": "应用"
+    "applyFilter": "确定"
   },
   "chat": {
     "placeholder": "输入消息...",

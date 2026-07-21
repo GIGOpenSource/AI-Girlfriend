@@ -762,7 +762,7 @@ export function Home() {
                         >
                           {comment.companion_name}
                         </span>
-                        <span className="text-foreground/80">
+                        <span className="text-foreground/80 break-words">
                           {/* 回复某人时显示 @xxx */}
                           {comment.reply_to_name && (
                             <span className="text-primary font-medium">
@@ -929,32 +929,14 @@ export function Home() {
 
             {/* 底部操作按钮：重置 / 应用 */}
             <div className="flex gap-2 mt-6">
-              {/* 重置：清空所有筛选 + 重新加载 */}
+              {/* 重置：只清空弹窗内草稿表单，不触发数据加载 */}
               <button
                 type="button"
                 className="flex-1 py-3 rounded-xl border border-border text-foreground hover:bg-secondary transition-colors"
                 onClick={() => {
-                  // 清空草稿 + 生效值
                   setDraftFilterLang("");
                   setDraftFilterGender("");
                   setDraftFilterOrientation("");
-                  setMomentFilterLang("");
-                  setMomentFilterGender("");
-                  setMomentFilterOrientation("");
-                  offsetRef.current = 0;         // offset 归零
-                  setShowMomentFilter(false);     // 关闭弹窗
-                  // 重新加载首页数据
-                  void (async () => {
-                    setLoading(true);
-                    try {
-                      await Promise.all([
-                        loadCompanionStrip(),
-                        loadMomentsPage(true, { filter_lang: "", gender: "", orientation: "" }),
-                      ]);
-                    } finally {
-                      setLoading(false);
-                    }
-                  })();
                 }}
               >
                 {t("home.resetFilter")}
