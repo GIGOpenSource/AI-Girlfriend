@@ -1,5 +1,6 @@
 import { TabBar } from "../components/TabBar";
 import { AvatarImage } from "../components/AvatarImage";
+import { useToast } from "../context/ToastContext";
 import {
   Search,
   MessageSquare,
@@ -84,6 +85,7 @@ interface CompanionItem {
 export function Discover() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -193,7 +195,7 @@ export function Discover() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     if (newImages.length + files.length > 9) {
-      alert(t("discover.maxImages") || "最多上传 9 张图片");
+      toast(t("discover.maxImages") || "最多上传 9 张图片");
       return;
     }
     setUploadingImages(true);
@@ -218,7 +220,7 @@ export function Discover() {
       setNewImages((prev) => [...prev, ...uploadedUrls]);
     } catch (err) {
       console.error("图片上传失败:", err);
-      alert(t("discover.imageUploadFailed") || "图片上传失败");
+      toast(t("discover.imageUploadFailed") || "图片上传失败");
     } finally {
       setUploadingImages(false);
       e.target.value = "";

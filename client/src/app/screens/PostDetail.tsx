@@ -2,6 +2,7 @@ import { useParams, useNavigate } from "react-router";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AvatarImage } from "../components/AvatarImage";
 import { normalizeMediaUrl } from "../utils/media";
+import { useToast } from "../context/ToastContext";
 import {
   ArrowLeft,
   Heart,
@@ -56,6 +57,7 @@ export function PostDetail() {
   const { postId } = useParams<{ postId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { toast } = useToast();
   const [post, setPost] = useState<PostDetailData | null>(null);
   const [loading, setLoading] = useState(true);
   const [commentText, setCommentText] = useState("");
@@ -154,7 +156,7 @@ export function PostDetail() {
       if (res.status === 401) {
         localStorage.removeItem("user_token");
         localStorage.removeItem("user_info");
-        alert(t("discover.loginExpired"));
+        toast(t("discover.loginExpired"));
         return;
       }
       if (res.ok) {
@@ -162,11 +164,11 @@ export function PostDetail() {
         fetchPost();
       } else {
         const data = await res.json();
-        alert(data.detail || t("discover.commentFailed"));
+        toast(data.detail || t("discover.commentFailed"));
       }
     } catch (err) {
       console.error(err);
-      alert(t("common.networkError"));
+      toast(t("common.networkError"));
     } finally {
       setSending(false);
     }

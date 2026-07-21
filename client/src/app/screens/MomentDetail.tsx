@@ -168,7 +168,7 @@ export function MomentDetail() {
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <div className="bg-card border-b border-border px-4 py-3 sticky top-0 z-10 flex items-center gap-3">
-        <button onClick={() => navigate("/home")} className="p-1">
+        <button onClick={() => navigate(-1)} className="p-1">
           <ArrowLeft className="w-5 h-5 text-foreground" />
         </button>
         <h1 className="text-lg text-foreground font-medium truncate flex-1">

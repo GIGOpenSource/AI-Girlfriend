@@ -4,6 +4,7 @@ import { ArrowLeft, Check, Wand2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { inferCompanionLanguage } from "../utils/companionLang";
 import { translatePersonalityTag, getPersonalityKey } from "../utils/personalityTags";
+import { useToast } from "../context/ToastContext";
 import { api, apiFetch } from "../utils/api";
 
 const citiesByLang: Record<string, string[]> = {
@@ -304,6 +305,7 @@ const personalities = [
 export function CreateCompanion() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [searchParams] = useSearchParams();
   const [name, setName] = useState("");
   const [age, setAge] = useState(22);
@@ -485,7 +487,7 @@ export function CreateCompanion() {
     const errorList = Object.values(newErrors);
     if (errorList.length > 0) {
       console.warn("[CreateCompanion] validateForm 失败字段:", newErrors);
-      alert(errorList.join("\n"));
+      toast(errorList.join("\n"));
     }
 
     return errorList.length === 0;

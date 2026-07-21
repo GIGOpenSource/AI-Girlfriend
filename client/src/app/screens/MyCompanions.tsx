@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { ArrowLeft, MessageCircle, Heart, MapPin, Sparkles, UserMinus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AvatarImage } from "../components/AvatarImage";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { sortCompanionsByUserLang } from "../utils/companionLang";
 import { formatAffectionDisplay } from "../utils/formatAffection";
 import { getAuthHeaders } from "../utils/authHeaders";
@@ -52,6 +53,7 @@ export function MyCompanions() {
   const [loading, setLoading] = useState(true);
   const [currentUserId, setCurrentUserId] = useState("");
   const [hiddenIds, setHiddenIds] = useState<Set<string>>(() => loadHiddenCompanionIds());
+  const [removeTargetId, setRemoveTargetId] = useState<string | null>(null);
 
   useEffect(() => {
     let uid = "";
@@ -105,14 +107,15 @@ export function MyCompanions() {
 
   const visibleCompanions = companions.filter((c) => !hiddenIds.has(c.id));
 
-  const hideFromList = (id: string) => {
-    if (!confirm(t("myCompanions.removeConfirm"))) return;
+  const handleRemoveConfirm = () => {
+    if (!removeTargetId) return;
     setHiddenIds((prev) => {
       const next = new Set(prev);
-      next.add(id);
+      next.add(removeTargetId);
       localStorage.setItem(MY_COMPANIONS_HIDDEN_KEY, JSON.stringify([...next]));
       return next;
     });
+    setRemoveTargetId(null);
   };
 
   const getAffectionLevel = (affection: number) => {
@@ -245,7 +248,7 @@ export function MyCompanions() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => hideFromList(companion.id)}
+                  onClick={() => setRemoveTargetId(companion.id)}
                   data-analytics-button={`my-companions-remove-${companion.id}`}
                   data-analytics-name={`我的伴侣页移出列表-${companion.name}`}
                   className="p-2 rounded-full border border-border text-muted-foreground hover:bg-secondary"
@@ -258,6 +261,16 @@ export function MyCompanions() {
           );
         })}
       </div>
+      <ConfirmDialog
+        open={removeTargetId !== null}
+        onOpenChange={(v) => { if (!v) setRemoveTargetId(null); }}
+        title={t("myCompanions.removeFromList")}
+        description={t("myCompanions.removeConfirm")}
+        confirmText={t("common.confirm")}
+        cancelText={t("common.cancel")}
+        onConfirm={handleRemoveConfirm}
+        destructive
+      />
     </div>
   );
 }

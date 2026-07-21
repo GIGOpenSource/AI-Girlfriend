@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { TabBar } from "../components/TabBar";
 import { useTheme } from "../context/ThemeContext";
+import { useToast } from "../context/ToastContext";
 import {
   Heart,
   MessageCircle,
@@ -23,17 +24,8 @@ import {
   Eye,
 } from "lucide-react";
 import { AvatarImage } from "../components/AvatarImage";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { normalizeMediaUrl } from "../utils/media";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../components/ui/alert-dialog";
 
 interface UserInfo {
   id: number;
@@ -57,6 +49,7 @@ export function Profile() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { toast } = useToast();
 
   const [user, setUser] = useState<UserInfo | null>(null);
   const [stats, setStats] = useState<UserStats>({
@@ -185,7 +178,7 @@ export function Profile() {
                 const data = await up.json();
                 const url = data.url as string | undefined;
                 if (!url) {
-                  alert(t("profile.avatarUploadFailed"));
+                  toast(t("profile.avatarUploadFailed"));
                   return;
                 }
                 const res = await fetch("/api/auth/me", {
@@ -213,10 +206,10 @@ export function Profile() {
                     /* ignore */
                   }
                 } else {
-                  alert(t("profile.avatarUploadFailed"));
+                  toast(t("profile.avatarUploadFailed"));
                 }
               } catch {
-                alert(t("profile.avatarUploadFailed"));
+                toast(t("profile.avatarUploadFailed"));
               } finally {
                 setAvatarUploading(false);
               }
@@ -740,25 +733,16 @@ export function Profile() {
       )}
 
       {/* 退出登录二次确认 */}
-      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('profile.logout')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('profile.logoutConfirm')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleLogout}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t('common.confirm')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={showLogoutConfirm}
+        onOpenChange={setShowLogoutConfirm}
+        title={t('profile.logout')}
+        description={t('profile.logoutConfirm')}
+        confirmText={t('common.confirm')}
+        cancelText={t('common.cancel')}
+        onConfirm={handleLogout}
+        destructive
+      />
 
       <TabBar />
     </div>

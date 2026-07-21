@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router";
 import { ArrowLeft, Send, MessageSquare } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useToast } from "../context/ToastContext";
 
 interface FeedbackMessage {
   id: number;
@@ -13,6 +14,7 @@ interface FeedbackMessage {
 export function FeedbackChat() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [messages, setMessages] = useState<FeedbackMessage[]>([]);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -29,7 +31,7 @@ export function FeedbackChat() {
       });
       if (!res.ok) {
         if (res.status === 401) {
-          alert(t('feedback.loginExpired'));
+          toast(t('feedback.loginExpired'));
           navigate("/");
           return;
         }
@@ -46,7 +48,7 @@ export function FeedbackChat() {
 
   useEffect(() => {
     if (!token) {
-      alert(t('feedback.loginRequired'));
+      toast(t('feedback.loginRequired'));
       navigate("/");
       return;
     }
@@ -86,7 +88,7 @@ export function FeedbackChat() {
       });
       if (!res.ok) {
         if (res.status === 401) {
-          alert(t('feedback.loginExpired'));
+          toast(t('feedback.loginExpired'));
           navigate("/");
           return;
         }
@@ -98,7 +100,7 @@ export function FeedbackChat() {
       console.error("发送反馈失败:", err);
       // 移除乐观更新
       setMessages((prev) => prev.filter((m) => m.id !== optimisticMsg.id));
-      alert(t('feedback.sendFailed'));
+      toast(t('feedback.sendFailed'));
     } finally {
       setIsSending(false);
     }

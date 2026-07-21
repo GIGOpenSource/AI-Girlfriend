@@ -5,6 +5,7 @@ import { Search, Plus, MessageSquare, X, UserPlus, Users } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useChat } from "../context/ChatContext";
 import { useTranslation } from "react-i18next";
+import { useToast } from "../context/ToastContext";
 import { getAuthHeaders } from "../utils/authHeaders";
 
 interface Conversation {
@@ -21,6 +22,7 @@ interface Conversation {
 export function Messages() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const formatRelativeTime = useCallback((isoTime: string) => {
     if (!isoTime) return "";
@@ -179,7 +181,7 @@ export function Messages() {
           onClick={() => {
             const token = localStorage.getItem("user_token");
             if (!token) {
-              alert(t('messages.loginRequiredFeedback'));
+              toast(t('messages.loginRequiredFeedback'));
               navigate("/");
               return;
             }

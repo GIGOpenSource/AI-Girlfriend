@@ -6,7 +6,7 @@
  * - 类型安全，返回Promise
  */
 
-// 无外部toast依赖，使用console和浏览器alert（可后续集成项目toast系统如ChatContext的toasts）
+import { showToast } from "../context/ToastContext";
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -60,13 +60,13 @@ export async function apiFetch<T = any>(
         localStorage.removeItem('user_info');
         window.location.href = '/login';
         console.error('登录已过期，请重新登录');
-        alert('登录已过期，请重新登录'); // 可替换为项目toast系统
+        showToast('登录已过期，请重新登录');
       } else if (response.status >= 500) {
         console.error('服务器错误，请稍后重试');
-        alert('服务器错误，请稍后重试');
+        showToast('服务器错误，请稍后重试');
       } else {
         console.error(errorData.detail || '请求失败');
-        alert(errorData.detail || '请求失败');
+        showToast(errorData.detail || '请求失败');
       }
 
       throw error;
@@ -83,7 +83,7 @@ export async function apiFetch<T = any>(
       // Network error - 统一处理，与报告中提到的不一致错误处理对齐
       const networkError = new Error('网络连接失败，请检查网络') as ApiError;
       console.error('网络错误:', err);
-      alert('网络错误，请检查您的网络连接或稍后重试');
+      showToast('网络错误，请检查您的网络连接或稍后重试');
       throw networkError;
     }
     console.error('API请求异常:', err);

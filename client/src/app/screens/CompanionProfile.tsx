@@ -3,6 +3,8 @@ import { useState, useEffect, useRef } from "react";
 import { ArrowLeft, MessageCircle, Calendar, Settings, Trash2, Copy } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { MomentImage } from "../components/MomentImage";
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import { useToast } from "../context/ToastContext";
 import { translatePersonalityTag } from "../utils/personalityTags";
 import { getAuthHeaders } from "../utils/authHeaders";
 import apiFetch from "../utils/api";
@@ -62,6 +64,14 @@ export function CompanionProfile() {
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const { clearMessages } = useChat();
+  const { toast } = useToast();
+  const [confirmState, setConfirmState] = useState<{
+    show: boolean;
+    title: string;
+    description: string;
+    action: () => void;
+    destructive?: boolean;
+  }>({ show: false, title: "", description: "", action: () => {} });
 
   useEffect(() => {
     if (!showMenu) return;
@@ -207,37 +217,44 @@ export function CompanionProfile() {
                   className="w-full text-left px-4 py-2.5 text-sm text-foreground hover:bg-secondary transition-colors"
                   data-analytics-button="companion-profile-clear-messages"
                   data-analytics-name="伴侣详情页清空消息"
-                  onClick={async () => {
+                  onClick={() => {
                     setShowMenu(false);
                     if (!companionId) return;
-                    if (!confirm(t('chat.confirmClearMessages'))) return;
-                    try {
-                      const res = await fetch(
-                        `/companions/${companionId}/clear-messages`,
-                        { method: "POST", headers: getAuthHeaders(), cache: "no-store" }
-                      );
-                      if (res.status === 401) {
-                        localStorage.removeItem("user_token");
-                        localStorage.removeItem("user_info");
-                        navigate("/");
-                        return;
-                      }
-                      if (res.ok) {
-                        clearMessages(companionId);
-                        setCompanion((prev) =>
-                          prev
-                            ? { ...prev, state: { ...prev.state, affection: 0 } }
-                            : prev
-                        );
-                        alert(t('chat.clearSuccess'));
-                      } else {
-                        console.error("[CompanionProfile] 清空消息失败, status:", res.status);
-                        alert(t('chat.clearFailed'));
-                      }
-                    } catch (err) {
-                      console.error("[CompanionProfile] 清空聊天记录失败:", err);
-                      alert(t('chat.clearFailed'));
-                    }
+                    setConfirmState({
+                      show: true,
+                      title: t('chat.clearMessages'),
+                      description: t('chat.confirmClearMessages'),
+                      destructive: true,
+                      action: async () => {
+                        try {
+                          const res = await fetch(
+                            `/companions/${companionId}/clear-messages`,
+                            { method: "POST", headers: getAuthHeaders(), cache: "no-store" }
+                          );
+                          if (res.status === 401) {
+                            localStorage.removeItem("user_token");
+                            localStorage.removeItem("user_info");
+                            navigate("/");
+                            return;
+                          }
+                          if (res.ok) {
+                            clearMessages(companionId);
+                            setCompanion((prev) =>
+                              prev
+                                ? { ...prev, state: { ...prev.state, affection: 0 } }
+                                : prev
+                            );
+                            toast(t('chat.clearSuccess'));
+                          } else {
+                            console.error("[CompanionProfile] 清空消息失败, status:", res.status);
+                            toast(t('chat.clearFailed'));
+                          }
+                        } catch (err) {
+                          console.error("[CompanionProfile] 清空聊天记录失败:", err);
+                          toast(t('chat.clearFailed'));
+                        }
+                      },
+                    });
                   }}
                 >
                   {t('chat.clearMessages')}
@@ -247,28 +264,35 @@ export function CompanionProfile() {
                   className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-secondary transition-colors"
                   data-analytics-button="companion-profile-delete"
                   data-analytics-name="伴侣详情页删除伴侣"
-                  onClick={async () => {
+                  onClick={() => {
                     setShowMenu(false);
-                    if (!confirm(t('companionProfile.deleteConfirm'))) return;
-                    try {
-                      const res = await fetch(`/companions/${companionId}`, {
-                        method: "DELETE",
-                        headers: getAuthHeaders(),
-                      });
-                      if (res.status === 401) {
-                        localStorage.removeItem("user_token");
-                        localStorage.removeItem("user_info");
-                        navigate("/");
-                        return;
-                      }
-                      if (res.ok) {
-                        navigate("/messages");
-                      } else {
-                        alert(t('companionProfile.deleteFailed'));
-                      }
-                    } catch {
-                      alert(t('companionProfile.deleteFailed'));
-                    }
+                    setConfirmState({
+                      show: true,
+                      title: t('companionProfile.deleteCompanion'),
+                      description: t('companionProfile.deleteConfirm'),
+                      destructive: true,
+                      action: async () => {
+                        try {
+                          const res = await fetch(`/companions/${companionId}`, {
+                            method: "DELETE",
+                            headers: getAuthHeaders(),
+                          });
+                          if (res.status === 401) {
+                            localStorage.removeItem("user_token");
+                            localStorage.removeItem("user_info");
+                            navigate("/");
+                            return;
+                          }
+                          if (res.ok) {
+                            navigate("/messages");
+                          } else {
+                            toast(t('companionProfile.deleteFailed'));
+                          }
+                        } catch {
+                          toast(t('companionProfile.deleteFailed'));
+                        }
+                      },
+                    });
                   }}
                 >
                   {t('companionProfile.deleteCompanion')}
@@ -510,27 +534,34 @@ export function CompanionProfile() {
 
         {isCreator && (
           <button
-            onClick={async () => {
-              if (!confirm(t('companionProfile.deleteConfirm'))) return;
-              try {
-                const res = await fetch(`/companions/${companionId}`, {
-                  method: "DELETE",
-                  headers: getAuthHeaders(),
-                });
-                if (res.status === 401) {
-                  localStorage.removeItem("user_token");
-                  localStorage.removeItem("user_info");
-                  navigate("/");
-                  return;
-                }
-                if (res.ok) {
-                  navigate("/messages");
-                } else {
-                  alert(t('companionProfile.deleteFailed'));
-                }
-              } catch {
-                alert(t('companionProfile.deleteFailed'));
-              }
+            onClick={() => {
+              setConfirmState({
+                show: true,
+                title: t('companionProfile.deleteCompanion'),
+                description: t('companionProfile.deleteConfirm'),
+                destructive: true,
+                action: async () => {
+                  try {
+                    const res = await fetch(`/companions/${companionId}`, {
+                      method: "DELETE",
+                      headers: getAuthHeaders(),
+                    });
+                    if (res.status === 401) {
+                      localStorage.removeItem("user_token");
+                      localStorage.removeItem("user_info");
+                      navigate("/");
+                      return;
+                    }
+                    if (res.ok) {
+                      navigate("/messages");
+                    } else {
+                      toast(t('companionProfile.deleteFailed'));
+                    }
+                  } catch {
+                    toast(t('companionProfile.deleteFailed'));
+                  }
+                },
+              });
             }}
             className="w-full bg-destructive/10 text-destructive py-3 rounded-full flex items-center justify-center gap-2 border border-destructive/20"
             data-analytics-button="companion-profile-delete-footer"
@@ -541,6 +572,17 @@ export function CompanionProfile() {
           </button>
         )}
       </div>
+      <ConfirmDialog
+        open={confirmState.show}
+        onOpenChange={(v) => { if (!v) setConfirmState((prev) => ({ ...prev, show: false })); }}
+        title={confirmState.title}
+        description={confirmState.description}
+        onConfirm={() => {
+          confirmState.action();
+          setConfirmState((prev) => ({ ...prev, show: false }));
+        }}
+        destructive={confirmState.destructive}
+      />
     </div>
   );
 }
