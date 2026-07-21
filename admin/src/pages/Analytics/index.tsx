@@ -231,7 +231,7 @@ export default function Analytics() {
         pagination={{ pageSize: 15, showSizeChanger: true }}
         onChange={(_, __, sorter) => {
           let field: keyof DauSeriesItem | undefined;
-          let order: 'ascend' | 'descend' | undefined;
+          let order: 'ascend' | 'descend' | null | undefined;
           if (Array.isArray(sorter) && sorter.length > 0) {
             field = sorter[0].field as keyof DauSeriesItem;
             order = sorter[0].order;
@@ -310,7 +310,7 @@ export default function Analytics() {
         pagination={{ pageSize: 10 }}
         onChange={(_, __, sorter) => {
           let field: keyof AnalyticsPageViewItem | undefined;
-          let order: 'ascend' | 'descend' | undefined;
+          let order: 'ascend' | 'descend' | null | undefined;
           if (Array.isArray(sorter) && sorter.length > 0) {
             field = sorter[0].field as keyof AnalyticsPageViewItem;
             order = sorter[0].order;
@@ -358,7 +358,7 @@ export default function Analytics() {
         pagination={{ pageSize: 10 }}
         onChange={(_, __, sorter) => {
           let field: keyof AnalyticsButtonClickItem | undefined;
-          let order: 'ascend' | 'descend' | undefined;
+          let order: 'ascend' | 'descend' | null | undefined;
           if (Array.isArray(sorter) && sorter.length > 0) {
             field = sorter[0].field as keyof AnalyticsButtonClickItem;
             order = sorter[0].order;

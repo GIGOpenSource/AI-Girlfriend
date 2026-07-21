@@ -184,16 +184,16 @@ export default function MomentForm() {
                       const imagePath = data.url || data.path || '';
                       form.setFieldsValue({ image_url: imagePath });
                       setPreviewImageUrl(imagePath);
-                      onSuccess(data, file);
+                      onSuccess?.(data, file);
                     } catch {
-                      onError(new Error('Invalid response'));
+                      onError?.(new Error('Invalid response'));
                     }
                   } else {
-                    onError(new Error(`HTTP ${xhr.status}`));
+                    onError?.(new Error(`HTTP ${xhr.status}`));
                   }
                 };
                 xhr.onerror = () => {
-                  onError(new Error('Network error'));
+                  onError?.(new Error('Network error'));
                 };
                 xhr.send(formData);
               }}
