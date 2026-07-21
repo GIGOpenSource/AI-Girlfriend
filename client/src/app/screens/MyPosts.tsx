@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { AvatarImage } from "../components/AvatarImage";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { normalizeMediaUrl } from "../utils/media";
 import { ArrowLeft, MessageSquare, Heart, Trash2, User } from "lucide-react";
 import apiFetch from "../utils/api";
@@ -43,6 +44,7 @@ export function MyPosts() {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
 
   const fetchMyPosts = useCallback(async () => {
     setLoading(true);
@@ -60,14 +62,15 @@ export function MyPosts() {
     fetchMyPosts();
   }, [fetchMyPosts]);
 
-  const handleDelete = async (postId: number) => {
-    if (!confirm(t("common.confirm"))) return;
+  const handleDeleteConfirm = async () => {
+    if (deleteTargetId == null) return;
     try {
-      await apiFetch(`/api/posts/${postId}`, { method: "DELETE" });
-      setPosts((prev) => prev.filter((p) => p.id !== postId));
+      await apiFetch(`/api/posts/${deleteTargetId}`, { method: "DELETE" });
+      setPosts((prev) => prev.filter((p) => p.id !== deleteTargetId));
     } catch {
       // apiFetch 内部已统一处理错误和401
     }
+    setDeleteTargetId(null);
   };
 
   return (
@@ -117,7 +120,7 @@ export function MyPosts() {
                   </p>
                 </div>
                 <button
-                  onClick={() => handleDelete(post.id)}
+                  onClick={() => setDeleteTargetId(post.id)}
                   className="p-2 text-muted-foreground hover:text-destructive transition-colors"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -177,6 +180,16 @@ export function MyPosts() {
           ))
         )}
       </div>
+      <ConfirmDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(v) => { if (!v) setDeleteTargetId(null); }}
+        title={t("profile.myMoments")}
+        description={t("common.confirm")}
+        confirmText={t("common.confirm")}
+        cancelText={t("common.cancel")}
+        onConfirm={handleDeleteConfirm}
+        destructive
+      />
     </div>
   );
 }

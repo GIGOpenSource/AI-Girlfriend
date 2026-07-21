@@ -4,6 +4,8 @@ import { ArrowLeft, MoreVertical, Smile, Send } from "lucide-react";
 import { useChat } from "../context/ChatContext";
 import { useTranslation } from "react-i18next";
 import { AvatarImage } from "../components/AvatarImage";
+import { ConfirmDialog } from "../components/ConfirmDialog";
+import { useToast } from "../context/ToastContext";
 import type { ChatMessage } from "../context/ChatContext";
 import { getAuthHeaders } from "../utils/authHeaders";
 import {
@@ -161,7 +163,9 @@ export function Chat() {
   const { companionId } = useParams<{ companionId: string }>();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const { toast } = useToast();
   const [copyAck, setCopyAck] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
   const {
     connect,
     sendMessage,
@@ -407,6 +411,9 @@ export function Chat() {
     }
   }, [companionId, getCompanionMessages, navigate, i18n.language]);
 
+  const loadMessagesRef = useRef(loadMessages);
+  loadMessagesRef.current = loadMessages;
+
   useEffect(() => {
     if (!companionId) return;
     initialScrollDone.current = false;
@@ -427,7 +434,7 @@ export function Chat() {
         if (!r.ok) throw new Error("加载失败");
         return r.json();
       }),
-      loadMessages(0, true),
+      loadMessagesRef.current(0, true),
     ])
       .then(([companionData]) => {
         if (!companionData) return;
@@ -443,7 +450,8 @@ export function Chat() {
         console.error("加载失败:", err);
         setLoading(false);
       });
-  }, [companionId, loadMessages, t, navigate]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [companionId, t, navigate]);
 
   useEffect(() => {
     if (!companionId) return;
@@ -644,6 +652,29 @@ export function Chat() {
     }
   };
 
+  const handleClearMessages = async () => {
+    if (!companionId) return;
+    try {
+      const res = await fetch(
+        `/companions/${companionId}/clear-messages`,
+        { method: "POST", headers: getAuthHeaders() }
+      );
+      if (res.ok) {
+        setMessages([]);
+        syncedMsgIds.current.clear();
+        setOffset(0);
+        setHasMore(true);
+        clearMessages(companionId);
+        toast(t('chat.clearSuccess'));
+      } else {
+        toast(t('chat.clearFailed'));
+      }
+    } catch (err) {
+      console.error("清空聊天记录失败:", err);
+      toast(t('chat.clearFailed'));
+    }
+  };
+
   const lastVisibleForTyping =
     visibleMessages.length > 0
       ? visibleMessages[visibleMessages.length - 1]
@@ -743,29 +774,10 @@ export function Chat() {
                   className="w-full text-left px-4 py-2.5 text-sm text-destructive hover:bg-secondary transition-colors duration-200 ease-out"
                   data-analytics-button="chat-clear-messages"
                   data-analytics-name="聊天菜单清空消息"
-                  onClick={async () => {
+                  onClick={() => {
                     setShowMenu(false);
                     if (!companionId) return;
-                    if (!confirm(t('chat.confirmClearMessages'))) return;
-                    try {
-                      const res = await fetch(
-                        `/companions/${companionId}/clear-messages`,
-                        { method: "POST", headers: getAuthHeaders() }
-                      );
-                      if (res.ok) {
-                        setMessages([]);
-                        syncedMsgIds.current.clear();
-                        setOffset(0);
-                        setHasMore(true);
-                        clearMessages(companionId);
-                        alert(t('chat.clearSuccess'));
-                      } else {
-                        alert(t('chat.clearFailed'));
-                      }
-                    } catch (err) {
-                      console.error("清空聊天记录失败:", err);
-                      alert(t('chat.clearFailed'));
-                    }
+                    setShowClearConfirm(true);
                   }}
                 >
                   {t('chat.clearMessages')}
@@ -982,6 +994,14 @@ export function Chat() {
           </button>
         </div>
       </div>
+      <ConfirmDialog
+        open={showClearConfirm}
+        onOpenChange={setShowClearConfirm}
+        title={t('chat.clearMessages')}
+        description={t('chat.confirmClearMessages')}
+        onConfirm={handleClearMessages}
+        destructive
+      />
     </div>
   );
 }

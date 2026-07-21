@@ -1,5 +1,6 @@
 import { TabBar } from "../components/TabBar";
 import { AvatarImage } from "../components/AvatarImage";
+import { useToast } from "../context/ToastContext";
 import {
   Search,
   MessageSquare,
@@ -84,6 +85,7 @@ interface CompanionItem {
 export function Discover() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [posts, setPosts] = useState<PostItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -95,7 +97,10 @@ export function Discover() {
   const [uploadingImages, setUploadingImages] = useState(false);
   const [creating, setCreating] = useState(false);
   const [activeCategory, setActiveCategory] = useState("");
-  const [activeTab, setActiveTab] = useState<"posts" | "companions">("posts");
+  const [activeTab, setActiveTab] = useState<"posts" | "companions">(() => {
+    const saved = sessionStorage.getItem("discover_tab");
+    return saved === "companions" ? "companions" : "posts";
+  });
   const [companions, setCompanions] = useState<CompanionItem[]>([]);
   const [companionFilter, setCompanionFilter] = useState<"all" | "recommended">("all");
   const [companionsLoading, setCompanionsLoading] = useState(false);
@@ -155,6 +160,10 @@ export function Discover() {
   }, [activeTab, fetchPosts, fetchCompanions]);
 
   useEffect(() => {
+    sessionStorage.setItem("discover_tab", activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
     setSearchQuery("");
   }, [activeCategory]);
 
@@ -186,7 +195,7 @@ export function Discover() {
     const files = e.target.files;
     if (!files || files.length === 0) return;
     if (newImages.length + files.length > 9) {
-      alert(t("discover.maxImages") || "最多上传 9 张图片");
+      toast(t("discover.maxImages") || "最多上传 9 张图片");
       return;
     }
     setUploadingImages(true);
@@ -211,7 +220,7 @@ export function Discover() {
       setNewImages((prev) => [...prev, ...uploadedUrls]);
     } catch (err) {
       console.error("图片上传失败:", err);
-      alert(t("discover.imageUploadFailed") || "图片上传失败");
+      toast(t("discover.imageUploadFailed") || "图片上传失败");
     } finally {
       setUploadingImages(false);
       e.target.value = "";
@@ -272,8 +281,8 @@ export function Discover() {
     return () => clearTimeout(timer);
   }, [searchQuery, deviceId]);
 
-  const displayPosts = searchQuery.trim() ? searchResults : posts;
-  const isSearchLoading = searchQuery.trim() && searchLoading;
+  const displayPosts = searchQuery ? searchResults : posts;
+  const isSearchLoading = searchQuery && searchLoading;
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (!containerRef.current) return;

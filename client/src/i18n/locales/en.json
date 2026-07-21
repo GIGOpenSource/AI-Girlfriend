@@ -19,6 +19,7 @@
   },
   "nav": {
     "home": "Home",
+    "messages": "Messages",
     "chat": "Chat",
     "discover": "Discover",
     "profile": "Profile"
@@ -187,6 +188,7 @@
     "pleaseLogin": "Please log in",
     "authorId": "Author ID",
     "myCompanions": "My Companions",
+    "myCompanionsHint": "Intimacy > 5 to appear",
     "myMoments": "My Posts",
     "intimacyRecord": "Intimacy Record",
     "notificationSettings": "Notifications",
@@ -210,6 +212,7 @@
   },
   "myCompanions": {
     "total": "Total",
+    "totalAffection": "Total Affection",
     "intimate": "Intimate Count",
     "soulmate": "Soulmate",
     "close": "Close",

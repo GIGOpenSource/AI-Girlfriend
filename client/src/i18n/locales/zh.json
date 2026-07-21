@@ -19,6 +19,7 @@
   },
   "nav": {
     "home": "首页",
+    "messages": "消息",
     "chat": "聊天",
     "discover": "发现",
     "profile": "我的"
@@ -188,6 +189,7 @@
     "pleaseLogin": "请先登录",
     "authorId": "作者ID",
     "myCompanions": "我的恋人",
+    "myCompanionsHint": "亲密度 > 5 才会显示",
     "myMoments": "我的帖子",
     "intimacyRecord": "亲密度记录",
     "notificationSettings": "通知设置",
@@ -212,6 +214,7 @@
   },
   "myCompanions": {
     "total": "总数",
+    "totalAffection": "总亲密度",
     "intimate": "亲密个数",
     "soulmate": "灵魂伴侣",
     "close": "亲近",

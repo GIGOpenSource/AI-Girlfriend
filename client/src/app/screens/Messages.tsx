@@ -5,6 +5,7 @@ import { Search, Plus, MessageSquare, X, UserPlus, Users } from "lucide-react";
 import { useNavigate } from "react-router";
 import { useChat } from "../context/ChatContext";
 import { useTranslation } from "react-i18next";
+import { useToast } from "../context/ToastContext";
 import { getAuthHeaders } from "../utils/authHeaders";
 
 interface Conversation {
@@ -21,6 +22,7 @@ interface Conversation {
 export function Messages() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const formatRelativeTime = useCallback((isoTime: string) => {
     if (!isoTime) return "";
@@ -81,7 +83,7 @@ export function Messages() {
   }, [lastMessages, unreadCounts, formatRelativeTime, t]);
 
   const loadConversations = useCallback(() => {
-    fetch("/companions", { headers: getAuthHeaders() })
+    fetch(`/companions?${new URLSearchParams({ filter_type: "mine_chatted" }).toString()}`, { headers: getAuthHeaders() })
       .then((r) => r.json())
       .then((data) => {
         const allCompanions = (data || []);
@@ -106,37 +108,6 @@ export function Messages() {
         setLoading(false);
       });
   }, [connect]);
-
-  // 优先从本地缓存恢复会话列表
-  useEffect(() => {
-    const savedLastMessages = localStorage.getItem("chat_last_messages");
-    if (savedLastMessages) {
-      try {
-        const cachedLastMsgs = JSON.parse(savedLastMessages) as Record<string, { text: string; fullTime?: string }>;
-        const companionIds = Object.keys(cachedLastMsgs);
-        if (companionIds.length > 0) {
-          const cachedConvs: Conversation[] = companionIds.map((id) => ({
-            id,
-            name: id,
-            avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${id}`,
-            lastMessage: cachedLastMsgs[id]?.text || "",
-            time: cachedLastMsgs[id]?.fullTime ? formatRelativeTime(cachedLastMsgs[id]!.fullTime) : "",
-            rawTime: cachedLastMsgs[id]?.fullTime || "",
-            unread: unreadCounts[id] || 0,
-          }));
-          cachedConvs.sort((a, b) => {
-            if (b.unread !== a.unread) return b.unread - a.unread;
-            const aTime = a.rawTime ? new Date(a.rawTime).getTime() : 0;
-            const bTime = b.rawTime ? new Date(b.rawTime).getTime() : 0;
-            return bTime - aTime;
-          });
-          setConversations(cachedConvs);
-        }
-      } catch {
-        // ignore
-      }
-    }
-  }, []);
 
   // 组件挂载时加载
   useEffect(() => {
@@ -210,7 +181,7 @@ export function Messages() {
           onClick={() => {
             const token = localStorage.getItem("user_token");
             if (!token) {
-              alert(t('messages.loginRequiredFeedback'));
+              toast(t('messages.loginRequiredFeedback'));
               navigate("/");
               return;
             }

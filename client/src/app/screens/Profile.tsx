@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router";
 import { TabBar } from "../components/TabBar";
 import { useTheme } from "../context/ThemeContext";
+import { useToast } from "../context/ToastContext";
 import {
   Heart,
   MessageCircle,
@@ -23,17 +24,8 @@ import {
   Eye,
 } from "lucide-react";
 import { AvatarImage } from "../components/AvatarImage";
+import { ConfirmDialog } from "../components/ConfirmDialog";
 import { normalizeMediaUrl } from "../utils/media";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../components/ui/alert-dialog";
 
 interface UserInfo {
   id: number;
@@ -57,6 +49,7 @@ export function Profile() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { toast } = useToast();
 
   const [user, setUser] = useState<UserInfo | null>(null);
   const [stats, setStats] = useState<UserStats>({
@@ -88,8 +81,8 @@ export function Profile() {
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
-  const menuItems: { icon: React.ElementType; label: string; badge?: string; action?: () => void; requireAuth?: boolean }[] = [
-    { icon: Users, label: t('profile.myCompanions'), requireAuth: true, action: () => navigate("/my-companions") },
+  const menuItems: { icon: React.ElementType; label: string; badge?: string; hint?: string; action?: () => void; requireAuth?: boolean }[] = [
+    { icon: Users, label: t('profile.myCompanions'), hint: t('profile.myCompanionsHint'), requireAuth: true, action: () => navigate("/my-companions") },
     { icon: Heart, label: t('profile.myMoments'), requireAuth: true, action: () => navigate("/my-posts") },
     { icon: MessageCircle, label: t('profile.intimacyRecord'), requireAuth: true, action: () => navigate("/intimacy-record") },
     { icon: Bell, label: t('profile.notificationSettings'), requireAuth: true, action: () => navigate("/notification-settings") },
@@ -126,7 +119,11 @@ export function Profile() {
             occupation: userData.occupation || "",
           });
         }
-        if (statsData) setStats(statsData);
+        if (statsData) setStats({
+          companion_count: statsData.intimate_companion_count ?? statsData.companion_count ?? 0,
+          total_turns: statsData.total_turns ?? 0,
+          days_together: statsData.max_days_together ?? statsData.days_together ?? 0,
+        });
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -177,11 +174,11 @@ export function Profile() {
               try {
                 const fd = new FormData();
                 fd.append("file", file);
-                const up = await fetch("/api/upload/image", { method: "POST", body: fd });
+                const up = await fetch("/api/upload/image", { method: "POST", headers: { "x-token": token }, body: fd });
                 const data = await up.json();
                 const url = data.url as string | undefined;
                 if (!url) {
-                  alert(t("profile.avatarUploadFailed"));
+                  toast(t("profile.avatarUploadFailed"));
                   return;
                 }
                 const res = await fetch("/api/auth/me", {
@@ -209,10 +206,10 @@ export function Profile() {
                     /* ignore */
                   }
                 } else {
-                  alert(t("profile.avatarUploadFailed"));
+                  toast(t("profile.avatarUploadFailed"));
                 }
               } catch {
-                alert(t("profile.avatarUploadFailed"));
+                toast(t("profile.avatarUploadFailed"));
               } finally {
                 setAvatarUploading(false);
               }
@@ -347,7 +344,12 @@ export function Profile() {
                     <div className="w-10 h-10 bg-secondary rounded-xl flex items-center justify-center">
                       <Icon className="w-5 h-5 text-foreground" />
                     </div>
-                    <span className="text-foreground">{item.label}</span>
+                    <div className="flex flex-col items-start">
+                      <span className="text-foreground">{item.label}</span>
+                      {item.hint && (
+                        <span className="text-muted-foreground text-xs">{item.hint}</span>
+                      )}
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     {item.badge && (
@@ -731,25 +733,16 @@ export function Profile() {
       )}
 
       {/* 退出登录二次确认 */}
-      <AlertDialog open={showLogoutConfirm} onOpenChange={setShowLogoutConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t('profile.logout')}</AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('profile.logoutConfirm')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('common.cancel')}</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleLogout}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              {t('common.confirm')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={showLogoutConfirm}
+        onOpenChange={setShowLogoutConfirm}
+        title={t('profile.logout')}
+        description={t('profile.logoutConfirm')}
+        confirmText={t('common.confirm')}
+        cancelText={t('common.cancel')}
+        onConfirm={handleLogout}
+        destructive
+      />
 
       <TabBar />
     </div>

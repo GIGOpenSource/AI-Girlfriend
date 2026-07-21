@@ -19,6 +19,7 @@
   },
   "nav": {
     "home": "ホーム",
+    "messages": "メッセージ",
     "chat": "チャット",
     "discover": "発見",
     "profile": "マイページ"
@@ -177,6 +178,7 @@
     "pleaseLogin": "ログインしてください",
     "authorId": "作者ID",
     "myCompanions": "マイ恋人",
+    "myCompanionsHint": "親密度 > 5 で表示",
     "myMoments": "マイモーメント",
     "intimacyRecord": "親密度記録",
     "notificationSettings": "通知設定",
@@ -199,6 +201,7 @@
   },
   "myCompanions": {
     "total": "総数",
+    "totalAffection": "総親密度",
     "intimate": "親密数",
     "soulmate": "ソウルメイト",
     "close": "親しい",

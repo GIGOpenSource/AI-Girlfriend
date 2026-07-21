@@ -156,7 +156,7 @@ export function Home() {
   const touchStartY = useRef(0);                            // 触摸起始 Y 坐标
   const isPulling = useRef(false);                          // 是否正在下拉
   const offsetRef = useRef(0);                              // 分页偏移量（存 ref 避免闭包过期问题）
-  const PAGE_SIZE = 20;                                     // 每页动态数量
+  const PAGE_SIZE = 5;                                     // 每页动态数量
 
   // ───────────────── 筛选条件（Moments Filter） ─────────────────
   // 生效中的筛选值（momentFilter*）→ 实时影响 API 请求

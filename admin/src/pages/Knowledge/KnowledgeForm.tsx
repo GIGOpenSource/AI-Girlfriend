@@ -111,7 +111,10 @@ export default function KnowledgeForm() {
               <Select.Option value="id">Bahasa Indonesia</Select.Option>
             </Select>
           </Form.Item>
-          <Form.Item name="content" label={t('table.summary')} rules={[{ required: true }]}>
+          <Form.Item name="content" label={t('table.summary')} rules={[
+            { required: true },
+            { min: 5, message: '内容摘要最少需要5个字符' },
+          ]}>
             <Input.TextArea rows={8} />
           </Form.Item>
           <Space>
