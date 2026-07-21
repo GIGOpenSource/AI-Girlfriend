@@ -7,7 +7,7 @@ export function Login() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -15,7 +15,7 @@ export function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!username.trim() || !password) {
+    if (!email.trim() || !password) {
       setError(t('login.errorEmpty'));
       return;
     }
@@ -24,7 +24,7 @@ export function Login() {
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.trim(), password }),
+        body: JSON.stringify({ username: email.trim(), password }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -59,13 +59,13 @@ export function Login() {
 
           <div>
             <input
-              id="login-username"
-              name="username"
+              id="login-email"
+              name="email"
               type="text"
               autoComplete="username"
               placeholder={t('login.username')}
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-input-background border border-border rounded-xl px-4 py-3 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
@@ -86,7 +86,7 @@ export function Login() {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground"
             >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+              {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
             </button>
           </div>
 

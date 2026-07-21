@@ -26,13 +26,13 @@
   },
   "login": {
     "title": "登录",
-    "username": "用户名",
+    "username": "邮箱",
     "password": "密码",
     "loginBtn": "登录",
     "registerBtn": "去注册",
     "noAccount": "还没有账号？",
     "subtitle": "与你的虚拟恋人重逢",
-    "errorEmpty": "请输入用户名和密码",
+    "errorEmpty": "请输入邮箱和密码",
     "errorFailed": "登录失败",
     "loggingIn": "登录中..."
   },
