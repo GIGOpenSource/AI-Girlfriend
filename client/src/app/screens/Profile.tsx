@@ -78,6 +78,29 @@ export function Profile() {
       return () => clearTimeout(timer);
     }
   }, [showErrorDialog]);
+
+  // 弹窗打开时锁定背景滚动
+  const isAnyModalOpen =
+    showEditName || showLangPicker || showAbout || showSecurity || showLogoutConfirm;
+  useEffect(() => {
+    if (isAnyModalOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+    } else {
+      const top = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      if (top) window.scrollTo(0, -parseInt(top, 10) || 0);
+    }
+    return () => {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+    };
+  }, [isAnyModalOpen]);
   const [avatarUploading, setAvatarUploading] = useState(false);
   const avatarInputRef = useRef<HTMLInputElement>(null);
 
@@ -87,7 +110,7 @@ export function Profile() {
     { icon: MessageCircle, label: t('profile.intimacyRecord'), requireAuth: true, action: () => navigate("/intimacy-record") },
     { icon: Bell, label: t('profile.notificationSettings'), requireAuth: true, action: () => navigate("/notification-settings") },
     { icon: Globe, label: t('profile.languagePreference'), action: () => setShowLangPicker(true) },
-    { icon: Shield, label: t('profile.accountSecurity'), requireAuth: true, action: () => setShowSecurity(true) },
+    { icon: Shield, label: t('profile.privacyPolicy'), requireAuth: true, action: () => navigate("/privacy-policy") },
     { icon: Info, label: t('profile.aboutUs'), action: () => setShowAbout(true) },
   ];
 
@@ -313,15 +336,17 @@ export function Profile() {
                   <Sun className="w-5 h-5 text-foreground" />
                 )}
               </div>
-              <span className="text-foreground">{t('profile.darkMode')}</span>
+              <span className="text-foreground">
+                {theme === "dark" ? t('profile.darkMode') : t('profile.lightMode')}
+              </span>
             </div>
             <div
               className={`w-12 h-7 rounded-full transition-colors ${
-                theme === "dark" ? "bg-primary" : "bg-muted"
+                theme === "dark" ? "bg-foreground/25" : "bg-muted"
               } relative`}
             >
               <div
-                className={`absolute top-1 w-5 h-5 bg-white rounded-full transition-transform ${
+                className={`absolute top-1 w-5 h-5 bg-white rounded-full shadow-md transition-transform ${
                   theme === "dark" ? "translate-x-6" : "translate-x-1"
                 }`}
               ></div>

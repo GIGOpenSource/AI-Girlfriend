@@ -83,6 +83,9 @@ const NotFound = lazy(() =>
 const MyPosts = lazy(() =>
   import("./screens/MyPosts").then((m) => ({ default: m.MyPosts }))
 );
+const PrivacyPolicy = lazy(() =>
+  import("./screens/PrivacyPolicy").then((m) => ({ default: m.PrivacyPolicy }))
+);
 
 function RootLayout() {
   const location = useLocation();
@@ -129,6 +132,7 @@ export const router = createBrowserRouter([
       { path: "my-posts", Component: MyPosts },
       { path: "notifications", Component: Notifications },
       { path: "notification-settings", Component: NotificationSettings },
+      { path: "privacy-policy", Component: PrivacyPolicy },
       { path: "*", Component: NotFound },
     ],
   },
